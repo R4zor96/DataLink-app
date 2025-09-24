@@ -10,5 +10,9 @@ import { RouterOutlet } from '@angular/router';
 export class AppComponent {
   title = 'DataLink-apppp';
   Hola = 'Hola';
-  jhon = 'Jhon'
+  jhon = 'Jhon';
+  Miguel = 'Miguel';
 }
+
+
+
