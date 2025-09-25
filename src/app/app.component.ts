@@ -8,7 +8,7 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'DataLink-apppp';
+  title = 'DataLink-ap';
   Hola = 'Hola';
   jhon = 'Jhon';
   Miguel = 'Miguel';
