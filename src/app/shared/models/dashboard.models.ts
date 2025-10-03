@@ -54,6 +54,7 @@ export interface Ubicacion {
 
 // DTO para enviar filtros al backend (similar al de NestJS)
 export interface DashboardFilters {
+  [key: string]: string | undefined; // <-- AÑADE ESTA LÍNEA
   id_distrito_federal?: string;
   id_distrito_local?: string;
   id_municipio?: string;
