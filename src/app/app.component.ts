@@ -3,16 +3,10 @@ import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  standalone: true, // Marcar como Standalone
+  imports: [RouterOutlet], // Solo necesita el RouterOutlet
+  template: `<router-outlet></router-outlet>`, // Su template solo contiene el router-outlet
 })
 export class AppComponent {
   title = 'DataLink-app';
-  Hola = 'Hola';
-  jhon = 'Jhon';
-  Miguel = 'Miguel';
 }
-
-
-
