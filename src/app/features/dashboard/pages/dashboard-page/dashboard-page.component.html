@@ -1,111 +1,237 @@
 <div class="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8">
   <div class="max-w-7xl mx-auto">
-    <h1 class="text-3xl font-bold text-slate-800 mb-8">Dashboard Electoral Tlaxcala</h1>
+    <h1 class="text-3xl font-bold text-slate-800 mb-8">
+      Dashboard Electoral Tlaxcala
+    </h1>
 
     <div class="bg-white shadow-md rounded-lg p-6 mb-8">
       <h2 class="text-xl font-semibold text-slate-700 mb-4">Filtros</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label for="df-select" class="block text-sm font-medium text-slate-700">Distrito Federal</label>
-          <select id="df-select" [(ngModel)]="currentFilters.id_distrito_federal" (change)="loadDashboardData()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+          <label
+            for="df-select"
+            class="block text-sm font-medium text-slate-700"
+            >Distrito Federal</label
+          >
+          <select
+            id="df-select"
+            [(ngModel)]="currentFilters.id_distrito_federal"
+            (change)="loadDashboardData()"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
+          >
             <option [value]="'all'">Todos</option>
-            <option *ngFor="let df of distritosFederales" [value]="df.id">{{ df.nombre }}</option>
+            <option *ngFor="let df of distritosFederales" [value]="df.id">
+              {{ df.nombre }}
+            </option>
           </select>
         </div>
         <div>
-          <label for="dl-select" class="block text-sm font-medium text-slate-700">Distrito Local</label>
-          <select id="dl-select" [(ngModel)]="currentFilters.id_distrito_local" (change)="loadDashboardData()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+          <label
+            for="dl-select"
+            class="block text-sm font-medium text-slate-700"
+            >Distrito Local</label
+          >
+          <select
+            id="dl-select"
+            [(ngModel)]="currentFilters.id_distrito_local"
+            (change)="loadDashboardData()"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
+          >
             <option [value]="'all'">Todos</option>
-            <option *ngFor="let dl of distritosLocales" [value]="dl.id">{{ dl.nombre }}</option>
+            <option *ngFor="let dl of distritosLocales" [value]="dl.id">
+              {{ dl.nombre }}
+            </option>
           </select>
         </div>
         <div>
-          <label for="municipio-select" class="block text-sm font-medium text-slate-700">Municipio</label>
-          <select id="municipio-select" [(ngModel)]="currentFilters.id_municipio" (change)="loadDashboardData()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md">
+          <label
+            for="municipio-select"
+            class="block text-sm font-medium text-slate-700"
+            >Municipio</label
+          >
+          <select
+            id="municipio-select"
+            [(ngModel)]="currentFilters.id_municipio"
+            (change)="loadDashboardData()"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
+          >
             <option [value]="'all'">Todos</option>
-            <option *ngFor="let municipio of municipios" [value]="municipio.id">{{ municipio.nombre }}</option>
+            <option *ngFor="let municipio of municipios" [value]="municipio.id">
+              {{ municipio.nombre }}
+            </option>
           </select>
         </div>
       </div>
       <div class="mt-6 flex justify-end">
-        <button (click)="resetFilters()" class="inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+        <button
+          (click)="resetFilters()"
+          class="inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+        >
           Limpiar Filtros
         </button>
       </div>
     </div>
 
-    <div *ngIf="isLoading" class="text-center text-lg text-slate-600 my-8">Cargando datos...</div>
+    <div *ngIf="isLoading" class="text-center text-lg text-slate-600 my-8">
+      Cargando datos...
+    </div>
 
-    <div *ngIf="!isLoading && kpisGenerales" class="space-y-8">
-
+    <div *ngIf="!isLoading && kpisGenerales as kpis" class="space-y-8">
       <div class="space-y-4">
         <h2 class="text-xl font-semibold text-slate-800">Resumen General</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <app-kpi-card title="Total de Encuestas" [value]="kpisGenerales.totalEncuestas" description="Número total de encuestas realizadas" iconClass="fas fa-poll"></app-kpi-card>
-          <app-kpi-card title="Municipios Cubiertos" [value]="kpisGenerales.cobertura.municipios" description="Municipios con datos" iconClass="fas fa-city"></app-kpi-card>
-          <app-kpi-card title="Distritos Locales Cubiertos" [value]="kpisGenerales.cobertura.distritosLocales" description="Distritos locales con datos" iconClass="fas fa-map-marked-alt"></app-kpi-card>
-          <app-kpi-card *ngFor="let genero of kpisGenerales.participacionGenero" [title]="genero.genero" [value]="genero.total" description="Total de encuestas" iconClass="fas fa-users"></app-kpi-card>
+          <app-kpi-card
+            title="Total de Encuestas"
+            [value]="kpis.totalEncuestas"
+            description="Número total de encuestas realizadas"
+            iconClass="fas fa-poll"
+          ></app-kpi-card>
+          <app-kpi-card
+            title="Municipios Cubiertos"
+            [value]="kpis.cobertura.municipios"
+            description="Municipios con datos"
+            iconClass="fas fa-city"
+          ></app-kpi-card>
+          <app-kpi-card
+            title="Distritos Locales Cubiertos"
+            [value]="kpis.cobertura.distritosLocales"
+            description="Distritos locales con datos"
+            iconClass="fas fa-map-marked-alt"
+          ></app-kpi-card>
+          <app-kpi-card
+            *ngFor="let genero of kpis.participacionGenero"
+            [title]="genero.genero"
+            [value]="genero.total"
+            description="Total de encuestas"
+            iconClass="fas fa-users"
+          ></app-kpi-card>
         </div>
       </div>
 
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold text-slate-800">Detalle de Encuestados</h2>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          <div *ngIf="preferencias" class="bg-white shadow-md rounded-lg p-6">
-            <h3 class="font-medium text-slate-800 mb-3">Preferencias Electorales</h3>
-            <div *ngIf="preferencias.length > 0; else noDataPref" class="text-slate-600">
-              <ul class="space-y-2"><li *ngFor="let item of preferencias" class="flex justify-between border-b border-slate-200 py-1">
-                  <span>{{ item.candidato }}</span>
-                  <span class="font-bold text-slate-800">{{ item.total }}</span>
-                </li>
-              </ul>
-            </div>
-            <ng-template #noDataPref><p class="text-slate-500 text-sm">No hay datos de preferencias.</p></ng-template>
-          </div>
-
-          <div *ngIf="graficosDemograficos" class="bg-white shadow-md rounded-lg p-6 space-y-4">
-            <div>
-              <h3 class="font-medium text-slate-800 mb-2">Distribución por Edad</h3>
-              <div *ngIf="graficosDemograficos.distribucionEdad.length > 0; else noData" class="text-slate-600">
-                <ul class="space-y-2">
-                  <li *ngFor="let item of graficosDemograficos.distribucionEdad" class="flex justify-between border-b border-slate-200 py-1">
-                    <span>{{ item.rango }}</span><span class="font-bold text-slate-800">{{ item.total }}</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-             <div>
-              <h3 class="font-medium text-slate-800 mb-2">Nivel de Escolaridad</h3>
-              <div *ngIf="graficosDemograficos.nivelEscolaridad.length > 0; else noData" class="text-slate-600">
-                <ul class="space-y-2">
-                  <li *ngFor="let item of graficosDemograficos.nivelEscolaridad" class="flex justify-between border-b border-slate-200 py-1">
-                    <span>{{ item.nivel }}</span><span class="font-bold text-slate-800">{{ item.total }}</span>
-                  </li>
-                </ul>
-              </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-4">
+          <h2 class="text-xl font-semibold text-slate-800">
+            Análisis Geográfico
+          </h2>
+          <div class="bg-white shadow-md rounded-lg p-6 h-96">
+            <app-heatmap-map [data]="ubicaciones ?? []"></app-heatmap-map>
+            <div
+              *ngIf="!ubicaciones || ubicaciones.length === 0"
+              class="flex items-center justify-center h-full text-slate-500"
+            >
+              No hay datos geográficos para mostrar.
             </div>
           </div>
+        </div>
 
-          <div *ngIf="graficosDemograficos" class="bg-white shadow-md rounded-lg p-6">
-            <h3 class="font-medium text-slate-800 mb-3">Ocupación Principal</h3>
-            <div *ngIf="graficosDemograficos.ocupacionPrincipal.length > 0; else noData" class="text-slate-600">
+        <div
+          *ngIf="preferencias as prefs"
+          class="bg-white shadow-md rounded-lg p-6 flex flex-col h-96"
+        >
+          <h3 class="font-medium text-slate-800 mb-3 flex-shrink-0">
+            Preferencias Electorales
+          </h3>
+
+          <div
+            *ngIf="prefs.length > 0; else noDataPref"
+            class="text-slate-600 flex-grow min-h-0 overflow-y-auto pr-2"
+          >
+            <ul class="space-y-2">
+              <li
+                *ngFor="let item of prefs"
+                class="flex justify-between border-b border-slate-200 py-1"
+              >
+                <span>{{ item.candidato }}</span>
+                <span class="font-bold text-slate-800">{{ item.total }}</span>
+              </li>
+            </ul>
+          </div>
+          <ng-template #noDataPref>
+            <p class="text-slate-500 text-sm">No hay datos de preferencias.</p>
+          </ng-template>
+        </div>
+      </div>
+
+      <div *ngIf="graficosDemograficos as demo" class="space-y-4">
+        <h2 class="text-xl font-semibold text-slate-800">
+          Detalle Demográfico
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white shadow-md rounded-lg p-6">
+            <h3 class="font-medium text-slate-800 mb-2">
+              Distribución por Edad
+            </h3>
+            <div
+              *ngIf="(demo.distribucionEdad ?? []).length > 0; else noData"
+              class="text-slate-600"
+            >
               <ul class="space-y-2">
-                <li *ngFor="let item of graficosDemograficos.ocupacionPrincipal" class="flex justify-between border-b border-slate-200 py-1">
-                  <span>{{ item.ocupacion }}</span>
-                  <span class="font-bold text-slate-800">{{ item.total }}</span>
+                <li
+                  *ngFor="let item of demo.distribucionEdad ?? []"
+                  class="flex justify-between border-b border-slate-200 py-1"
+                >
+                  <span>{{ item.rango }}</span
+                  ><span class="font-bold text-slate-800">{{
+                    item.total
+                  }}</span>
                 </li>
               </ul>
             </div>
           </div>
-
+          <div class="bg-white shadow-md rounded-lg p-6">
+            <h3 class="font-medium text-slate-800 mb-2">
+              Nivel de Escolaridad
+            </h3>
+            <div
+              *ngIf="(demo.nivelEscolaridad ?? []).length > 0; else noData"
+              class="text-slate-600"
+            >
+              <ul class="space-y-2">
+                <li
+                  *ngFor="let item of demo.nivelEscolaridad ?? []"
+                  class="flex justify-between border-b border-slate-200 py-1"
+                >
+                  <span>{{ item.nivel }}</span
+                  ><span class="font-bold text-slate-800">{{
+                    item.total
+                  }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="bg-white shadow-md rounded-lg p-6">
+            <h3 class="font-medium text-slate-800 mb-3">Ocupación Principal</h3>
+            <div
+              *ngIf="(demo.ocupacionPrincipal ?? []).length > 0; else noData"
+              class="text-slate-600"
+            >
+              <ul class="space-y-2">
+                <li
+                  *ngFor="let item of demo.ocupacionPrincipal"
+                  class="flex justify-between border-b border-slate-200 py-1"
+                >
+                  <span>{{ item.ocupacion }}</span
+                  ><span class="font-bold text-slate-800">{{
+                    item.total
+                  }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <ng-template #noData><p class="text-slate-500 text-sm">No hay datos disponibles.</p></ng-template>
+    <ng-template #noData
+      ><p class="text-slate-500 text-sm">
+        No hay datos disponibles.
+      </p></ng-template
+    >
 
-    <div *ngIf="!isLoading && !kpisGenerales" class="text-center text-lg text-slate-500 my-8">
+    <div
+      *ngIf="!isLoading && !kpisGenerales"
+      class="text-center text-lg text-slate-500 my-8"
+    >
       Selecciona filtros para ver los datos del dashboard.
     </div>
   </div>

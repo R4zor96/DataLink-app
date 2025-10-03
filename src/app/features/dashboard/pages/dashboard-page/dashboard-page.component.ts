@@ -4,24 +4,26 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-
 import { ApiService } from '../../../../core/services/api.service';
-import { KpiCardComponent } from '../../../../shared/components/kpi-card/kpi-card.component';
 import {
   DashboardFilters,
   KpisGenerales,
   GraficosDemograficos,
   Preferencia,
   Region,
+  Ubicacion,
 } from '../../../../shared/models/dashboard.models';
+import { KpiCardComponent } from '../../../../shared/components/kpi-card/kpi-card.component';
+import { HeatmapMapComponent } from '../../../../shared/components/heatmap-map/heatmap-map.component';
 
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
   imports: [
     CommonModule, // Para *ngIf, *ngFor
-    FormsModule,  // Para [(ngModel)]
+    FormsModule, // Para [(ngModel)]
     KpiCardComponent,
+    HeatmapMapComponent,
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css',
@@ -38,7 +40,8 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   // Propiedades para almacenar los datos de la API
   kpisGenerales: KpisGenerales | null = null;
   graficosDemograficos: GraficosDemograficos | null = null;
-  preferencias: Preferencia[] | null = null; // Correctamente tipado como un array o null
+  preferencias: Preferencia[] | null = null;
+  ubicaciones: Ubicacion[] | null = null;
 
   // Estado de carga
   isLoading: boolean = false;
@@ -60,49 +63,62 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
 
   // Carga las listas de opciones para los menús desplegables de filtros
   loadFilterOptions(): void {
-    this.apiService.getDistritosFederales().pipe(takeUntil(this.unsubscribe$)).subscribe(data => {
-      this.distritosFederales = data;
-    });
-    this.apiService.getDistritosLocales().pipe(takeUntil(this.unsubscribe$)).subscribe(data => {
-      this.distritosLocales = data;
-    });
-    this.apiService.getMunicipios().pipe(takeUntil(this.unsubscribe$)).subscribe(data => {
-      this.municipios = data;
-    });
+    this.apiService
+      .getDistritosFederales()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((data) => {
+        this.distritosFederales = data;
+      });
+    this.apiService
+      .getDistritosLocales()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((data) => {
+        this.distritosLocales = data;
+      });
+    this.apiService
+      .getMunicipios()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((data) => {
+        this.municipios = data;
+      });
   }
 
   // Carga todos los datos del dashboard desde la API
+  // En tu archivo dashboard-page.component.ts
+
   loadDashboardData(): void {
     this.isLoading = true;
 
-    // 1. Crea una copia limpia de los filtros para enviar a la API
     const filtersToSend: DashboardFilters = { ...this.currentFilters };
 
-    // 2. Revisa si algún filtro tiene el valor 'all' y lo elimina
     for (const key in filtersToSend) {
-      if (filtersToSend[key] === 'all' || filtersToSend[key] === null || filtersToSend[key] === undefined) {
+      if (
+        filtersToSend[key] === 'all' ||
+        filtersToSend[key] === null ||
+        filtersToSend[key] === undefined
+      ) {
         delete filtersToSend[key];
       }
     }
 
-    // 3. Ejecuta todas las peticiones a la API en paralelo
     Promise.all([
       this.apiService.getKpisGenerales(filtersToSend).toPromise(),
       this.apiService.getGraficosDemograficos(filtersToSend).toPromise(),
       this.apiService.getPreferencias(filtersToSend).toPromise(),
+      this.apiService.getUbicaciones(filtersToSend).toPromise(),
     ])
-      .then(([kpis, demograficos, preferencias]) => {
-        // 4. Asigna los resultados a las propiedades del componente de forma segura
+      .then(([kpis, demograficos, preferencias, ubicaciones]) => {
         this.kpisGenerales = kpis ?? null;
         this.graficosDemograficos = demograficos ?? null;
         this.preferencias = preferencias ?? null;
+        this.ubicaciones = ubicaciones ?? null;
       })
       .catch((error) => {
         console.error('Error al cargar datos del dashboard', error);
-        // Resetea los datos en caso de error para no mostrar información vieja
         this.kpisGenerales = null;
         this.graficosDemograficos = null;
         this.preferencias = null;
+        this.ubicaciones = null; // También resetea esto en caso de error
       })
       .finally(() => {
         this.isLoading = false;
