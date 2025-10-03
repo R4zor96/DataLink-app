@@ -1,1 +1,9 @@
-<p>kpi-card works!</p>
+<div [ngClass]="bgColorClass" class="rounded-lg shadow-md p-6 text-white flex items-center justify-between">
+  <div>
+    <h3 class="text-sm font-semibold uppercase opacity-75">{{ title }}</h3>
+    <p class="text-3xl font-bold mt-1">{{ value }}</p>
+    <p *ngIf="description" class="text-xs opacity-80 mt-2">{{ description }}</p>
+  </div>
+  <div class="text-5xl opacity-50">
+    <i [class]="iconClass"></i> </div>
+</div>
