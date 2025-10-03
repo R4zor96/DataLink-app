@@ -36,10 +36,15 @@ export interface GraficosDemograficos {
 }
 
 // Interfaces para los datos que vienen de getPreferencias
-export interface Preferencias {
+export interface Preferencia {
   candidato: string;
   total: string;
-}[];
+}
+
+// 2. Define la interfaz para la RESPUESTA COMPLETA que manda la API
+export interface PreferenciasResponse {
+  preferencias: Preferencia[]; // Aquí dentro está el array que necesitas
+}
 
 // Interfaces para los datos que vienen de getUbicaciones
 export interface Ubicacion {

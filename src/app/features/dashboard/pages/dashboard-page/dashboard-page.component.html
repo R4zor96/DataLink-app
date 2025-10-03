@@ -1,1 +1,156 @@
-<p>dashboard-page works!</p>
+<div class="min-h-screen bg-gray-100 p-6">
+  <h1 class="text-4xl font-bold text-gray-800 mb-8">Dashboard Electoral Tlaxcala</h1>
+
+  <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Filtros</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div>
+        <label for="df-select" class="block text-sm font-medium text-gray-700">Distrito Federal</label>
+        <select
+          id="df-select"
+          [(ngModel)]="currentFilters.id_distrito_federal"
+          (change)="loadDashboardData()"
+          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
+          <option [value]="undefined">Todos</option>
+          <option *ngFor="let df of distritosFederales" [value]="df.id">{{ df.nombre }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="dl-select" class="block text-sm font-medium text-gray-700">Distrito Local</label>
+        <select
+          id="dl-select"
+          [(ngModel)]="currentFilters.id_distrito_local"
+          (change)="loadDashboardData()"
+          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
+          <option [value]="undefined">Todos</option>
+          <option *ngFor="let dl of distritosLocales" [value]="dl.id">{{ dl.nombre }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="municipio-select" class="block text-sm font-medium text-gray-700">Municipio</label>
+        <select
+          id="municipio-select"
+          [(ngModel)]="currentFilters.id_municipio"
+          (change)="loadDashboardData()"
+          class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
+          <option [value]="undefined">Todos</option>
+          <option *ngFor="let municipio of municipios" [value]="municipio.id">{{ municipio.nombre }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button
+        (click)="resetFilters()"
+        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        Limpiar Filtros
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center text-lg text-indigo-600 my-8">
+    Cargando datos...
+    </div>
+
+  <div *ngIf="!isLoading && kpisGenerales" class="space-y-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Resumen General</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <app-kpi-card
+          title="Total de Encuestas"
+          [value]="kpisGenerales.totalEncuestas"
+          description="Número total de encuestas realizadas"
+          iconClass="fas fa-poll"
+          bgColorClass="bg-indigo-600"
+        ></app-kpi-card>
+
+        <app-kpi-card
+          title="Municipios Cubiertos"
+          [value]="kpisGenerales.cobertura.municipios"
+          description="Municipios con datos de encuesta"
+          iconClass="fas fa-city"
+          bgColorClass="bg-green-600"
+        ></app-kpi-card>
+
+        <app-kpi-card
+          title="Distritos Locales Cubiertos"
+          [value]="kpisGenerales.cobertura.distritosLocales"
+          description="Distritos locales con datos de encuesta"
+          iconClass="fas fa-map-marked-alt"
+          bgColorClass="bg-teal-600"
+        ></app-kpi-card>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Participación por Género</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <app-kpi-card
+            *ngFor="let genero of kpisGenerales.participacionGenero"
+            [title]="genero.genero"
+            [value]="genero.total"
+            description="Total de encuestas"
+            iconClass="fas fa-users"
+            bgColorClass="bg-purple-600"
+          ></app-kpi-card>
+          <div *ngIf="kpisGenerales.participacionGenero.length === 0" class="text-gray-500">
+            No hay datos de género para esta selección.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="graficosDemograficos" class="bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Demografía de Encuestados</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 p-4 rounded-md">
+          <h3 class="font-medium text-gray-700 mb-2">Distribución por Edad</h3>
+          <div *ngIf="graficosDemograficos.distribucionEdad.length > 0; else noData">
+            <ul class="list-disc pl-5">
+              <li *ngFor="let item of graficosDemograficos.distribucionEdad">{{ item.rango }}: {{ item.total }}</li>
+            </ul>
+          </div>
+          <ng-template #noData><p class="text-gray-500 text-sm">No hay datos de edad.</p></ng-template>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-md">
+          <h3 class="font-medium text-gray-700 mb-2">Nivel de Escolaridad</h3>
+          <div *ngIf="graficosDemograficos.nivelEscolaridad.length > 0; else noData">
+            <ul class="list-disc pl-5">
+              <li *ngFor="let item of graficosDemograficos.nivelEscolaridad">{{ item.nivel }}: {{ item.total }}</li>
+            </ul>
+          </div>
+          <ng-template #noData><p class="text-gray-500 text-sm">No hay datos de escolaridad.</p></ng-template>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-md col-span-full">
+          <h3 class="font-medium text-gray-700 mb-2">Ocupación Principal</h3>
+          <div *ngIf="graficosDemograficos.ocupacionPrincipal.length > 0; else noData">
+            <ul class="list-disc pl-5">
+              <li *ngFor="let item of graficosDemograficos.ocupacionPrincipal">{{ item.ocupacion }}: {{ item.total }}</li>
+            </ul>
+          </div>
+          <ng-template #noData><p class="text-gray-500 text-sm">No hay datos de ocupación.</p></ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="preferencias" class="bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Preferencias Electorales</h2>
+      <div *ngIf="preferencias.length > 0; else noDataPref">
+        <ul class="list-disc pl-5">
+          <li *ngFor="let item of preferencias">{{ item.candidato }}: {{ item.total }}</li>
+        </ul>
+      </div>
+      <ng-template #noDataPref><p class="text-gray-500 text-sm">No hay datos de preferencias para esta selección.</p></ng-template>
+    </div>
+
+    </div>
+  <div *ngIf="!isLoading && !kpisGenerales" class="text-center text-lg text-gray-500 my-8">
+    Selecciona filtros para ver los datos del dashboard.
+  </div>
+</div>

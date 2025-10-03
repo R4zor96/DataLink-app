@@ -2,12 +2,14 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import {
   DashboardFilters,
   KpisGenerales,
   GraficosDemograficos,
-  Preferencias,
+  Preferencia,
+  PreferenciasResponse,
   Ubicacion,
   Region,
 } from '../../shared/models/dashboard.models';
@@ -48,9 +50,12 @@ export class ApiService {
     return this.http.get<GraficosDemograficos>(`${this.apiUrl}/graficos-demograficos`, { params });
   }
 
-  getPreferencias(filters?: DashboardFilters): Observable<Preferencias> {
+getPreferencias(filters?: DashboardFilters): Observable<Preferencia[]> { // 2. El método ahora devuelve un array
     const params = this.buildParams(filters);
-    return this.http.get<Preferencias>(`${this.apiUrl}/preferencias`, { params });
+    return this.http.get<PreferenciasResponse>(`${this.apiUrl}/preferencias`, { params }) // 3. Espera el objeto de respuesta
+      .pipe(
+        map(response => response.preferencias) // 4. Extrae solo el array de adentro
+      );
   }
 
   getUbicaciones(filters?: DashboardFilters): Observable<Ubicacion[]> {

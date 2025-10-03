@@ -1,6 +1,6 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http'; // Importa el proveedor de HttpClient
+import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { CoreModule } from './core/core.module'; // Aún podemos usar NgModules
