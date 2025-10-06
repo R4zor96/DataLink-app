@@ -1,13 +1,17 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardPageComponent } from './pages/dashboard-page/dashboard-page.component';
+import { DashboardRegisterClientComponent } from './pages/dashboard-register-client/dashboard-register-client.component';
 
 const routes: Routes = [
   {
-    // Cuando la ruta sea la base del módulo (ej. /dashboard),
     // muestra el componente DashboardPageComponent.
     path: '',
     component: DashboardPageComponent
+  },
+  {
+    path: 'register',
+    component: DashboardRegisterClientComponent
   }
 ];
 
