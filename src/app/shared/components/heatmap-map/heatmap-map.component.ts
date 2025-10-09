@@ -77,9 +77,6 @@ export class HeatmapMapComponent implements OnChanges, AfterViewInit {
     //   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     // }).addTo(this.map);
 
-    // ----- 👇 ESTA ES LA LÍNEA QUE ARREGLA EL MAPA 👇 -----
-    // Forzamos al mapa a detectar el tamaño de su contenedor.
-    // El setTimeout asegura que esto se ejecute después de que Angular haya terminado de renderizar.
     setTimeout(() => {
       this.map.invalidateSize();
     }, 0);
