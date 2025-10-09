@@ -16,7 +16,7 @@
           <select
             id="df-select"
             [(ngModel)]="currentFilters.id_distrito_federal"
-            (change)="loadDashboardData()"
+            (change)="onFederalDistrictChange()"
             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
           >
             <option [value]="'all'">Todos</option>
@@ -34,7 +34,7 @@
           <select
             id="dl-select"
             [(ngModel)]="currentFilters.id_distrito_local"
-            (change)="loadDashboardData()"
+            (change)="onLocalDistrictChange()"
             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md"
           >
             <option [value]="'all'">Todos</option>
@@ -114,7 +114,7 @@
             Análisis Geográfico
           </h2>
           <div class="bg-white shadow-md rounded-lg p-6 h-96">
-            <app-heatmap-map [data]="ubicaciones ?? []"></app-heatmap-map>
+            <app-heatmap-map [data]="ubicaciones"></app-heatmap-map>
             <div
               *ngIf="!ubicaciones || ubicaciones.length === 0"
               class="flex items-center justify-center h-full text-slate-500"

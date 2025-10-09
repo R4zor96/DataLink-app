@@ -1,5 +1,3 @@
-// src/app/core/services/api.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map } from 'rxjs/operators';
@@ -15,7 +13,7 @@ import {
 } from '../../shared/models/dashboard.models';
 
 @Injectable({
-  providedIn: 'root' // Este servicio se inyecta en el root, por eso va en CoreModule
+  providedIn: 'root', // Este servicio se inyecta en el root, por eso va en CoreModule
 })
 export class ApiService {
   private apiUrl = 'http://localhost:3000/dashboard'; // URL base de tu API NestJS
@@ -42,19 +40,28 @@ export class ApiService {
 
   getKpisGenerales(filters?: DashboardFilters): Observable<KpisGenerales> {
     const params = this.buildParams(filters);
-    return this.http.get<KpisGenerales>(`${this.apiUrl}/kpis-generales`, { params });
+    return this.http.get<KpisGenerales>(`${this.apiUrl}/kpis-generales`, {
+      params,
+    });
   }
 
-  getGraficosDemograficos(filters?: DashboardFilters): Observable<GraficosDemograficos> {
+  getGraficosDemograficos(
+    filters?: DashboardFilters
+  ): Observable<GraficosDemograficos> {
     const params = this.buildParams(filters);
-    return this.http.get<GraficosDemograficos>(`${this.apiUrl}/graficos-demograficos`, { params });
+    return this.http.get<GraficosDemograficos>(
+      `${this.apiUrl}/graficos-demograficos`,
+      { params }
+    );
   }
 
-getPreferencias(filters?: DashboardFilters): Observable<Preferencia[]> { // 2. El método ahora devuelve un array
+  getPreferencias(filters?: DashboardFilters): Observable<Preferencia[]> {
+    // 2. El método ahora devuelve un array
     const params = this.buildParams(filters);
-    return this.http.get<PreferenciasResponse>(`${this.apiUrl}/preferencias`, { params }) // 3. Espera el objeto de respuesta
+    return this.http
+      .get<PreferenciasResponse>(`${this.apiUrl}/preferencias`, { params }) // 3. Espera el objeto de respuesta
       .pipe(
-        map(response => response.preferencias) // 4. Extrae solo el array de adentro
+        map((response) => response.preferencias) // 4. Extrae solo el array de adentro
       );
   }
 
@@ -63,18 +70,28 @@ getPreferencias(filters?: DashboardFilters): Observable<Preferencia[]> { // 2. E
     return this.http.get<Ubicacion[]>(`${this.apiUrl}/ubicaciones`, { params });
   }
 
-  // --- Métodos para obtener los datos de los filtros ---
-  // AÚN NO HEMOS CREADO ESTOS ENDPOINTS EN NESTJS, SON UN PASO FUTURO.
-  // Por ahora, devolverán datos dummy o vacíos.
+  // Métodos para obtener las listas de filtros
   getDistritosFederales(): Observable<Region[]> {
     return this.http.get<Region[]>(`${this.filterUrl}/distritos-federales`);
   }
 
-  getDistritosLocales(): Observable<Region[]> {
-    return this.http.get<Region[]>(`${this.filterUrl}/distritos-locales`);
+  //El método ahora acepta un ID opcional
+  getDistritosLocales(idDF?: string): Observable<Region[]> {
+    let params = new HttpParams();
+    if (idDF && idDF !== 'all') {
+      params = params.set('id_distrito_federal', idDF);
+    }
+    return this.http.get<Region[]>(`${this.filterUrl}/distritos-locales`, {
+      params,
+    });
   }
 
-  getMunicipios(): Observable<Region[]> {
-    return this.http.get<Region[]>(`${this.filterUrl}/municipios`);
+  //El método ahora acepta un ID opcional
+  getMunicipios(idDL?: string): Observable<Region[]> {
+    let params = new HttpParams();
+    if (idDL && idDL !== 'all') {
+      params = params.set('id_distrito_local', idDL);
+    }
+    return this.http.get<Region[]>(`${this.filterUrl}/municipios`, { params });
   }
 }

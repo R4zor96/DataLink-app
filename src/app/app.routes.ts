@@ -5,9 +5,13 @@ import { DashboardLoginComponent } from './features/dashboard/pages/dashboard-lo
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'login',
     component: DashboardLoginComponent,
-    pathMatch: 'full'
+  },
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
   },
   {
     path: 'dashboard',
