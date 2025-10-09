@@ -114,7 +114,7 @@
             Análisis Geográfico
           </h2>
           <div class="bg-white shadow-md rounded-lg p-6 h-96">
-            <app-heatmap-map [data]="ubicaciones ?? []"></app-heatmap-map>
+            <app-heatmap-map [data]="ubicaciones"></app-heatmap-map>
             <div
               *ngIf="!ubicaciones || ubicaciones.length === 0"
               class="flex items-center justify-center h-full text-slate-500"

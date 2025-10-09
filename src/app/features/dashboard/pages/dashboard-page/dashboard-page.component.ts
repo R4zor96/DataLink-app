@@ -14,7 +14,11 @@ import { DashboardFilters, KpisGenerales, GraficosDemograficos, Preferencia, Reg
   styleUrl: './dashboard-page.component.css',
 })
 export class DashboardPageComponent implements OnInit {
-  currentFilters: DashboardFilters = {};
+  currentFilters: DashboardFilters = {
+    id_distrito_federal: 'all',
+    id_distrito_local: 'all',
+    id_municipio: 'all'
+  };
 
   distritosFederales: Region[] = [];
   distritosLocales: Region[] = [];
@@ -103,3 +107,5 @@ export class DashboardPageComponent implements OnInit {
     this.loadDashboardData();
   }
 }
+
+
