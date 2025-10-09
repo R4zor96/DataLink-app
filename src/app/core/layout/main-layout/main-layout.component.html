@@ -1,8 +1,14 @@
-<app-header></app-header>
+<div class="flex h-screen bg-slate-100">
 
-<main class="main-content">
-  <router-outlet></router-outlet>
-</main>
+  <app-sidebar></app-sidebar>
 
-<app-footer></app-footer>
+  <div class="flex-1 flex flex-col overflow-hidden">
 
+    <app-header></app-header>
+
+    <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>
