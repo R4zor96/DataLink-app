@@ -1,1 +1,52 @@
-<p>bar-chart works!</p>
+<div
+  class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-4xl mx-auto transition-transform duration-300 hover:scale-[1.01] hover:shadow-[#E71D36]/40"
+>
+  <!-- Encabezado -->
+  <div class="flex items-center justify-between mb-6">
+    <h3 class="text-2xl font-extrabold text-[#0D1B2A]">Gráfico de Barras</h3>
+    <i class="fa-solid fa-chart-column text-[#E71D36] text-3xl"></i>
+  </div>
+
+  <p class="text-sm text-gray-500 mb-8">
+    Comparativa visual de los indicadores KPI actuales (escala proporcional al
+    100 %).
+  </p>
+
+  <!-- Contenedor del gráfico -->
+  <div
+    class="relative h-80 bg-gradient-to-b from-slate-50 to-slate-100 rounded-xl flex items-end justify-around px-4 overflow-hidden"
+  >
+    <!-- Líneas guía -->
+    <div class="absolute top-1/4 left-0 w-full h-[2px] bg-black/5"></div>
+    <div class="absolute top-1/2 left-0 w-full h-[2px] bg-black/5"></div>
+    <div class="absolute top-3/4 left-0 w-full h-[2px] bg-black/5"></div>
+
+    <!-- Barras -->
+    <div
+      *ngFor="let kpi of kpis"
+      class="group flex flex-col items-center justify-end h-full gap-2"
+    >
+      <div class="flex flex-col justify-end h-full">
+        <!-- ✅ Barra con color fijo -->
+        <div
+          class="w-10 h-0 rounded-t-lg bg-[#E71D36] shadow-[0_6px_16px_rgba(231,29,54,0.25)] transition-all duration-[1200ms] ease-in-out"
+        ></div>
+      </div>
+
+      <!-- ✅ Valor con color fijo -->
+      <span
+        class="text-xs font-bold text-[#E71D36] opacity-0 transition-opacity duration-700"
+      >
+        {{ kpi.value }}%
+      </span>
+
+      <!-- Etiqueta -->
+      <span
+        class="text-sm font-semibold text-[#1B263B] group-hover:text-[#E71D36] transition-colors duration-300"
+      >
+        {{ kpi.title }}
+      </span>
+    </div>
+  </div>
+
+</div>
