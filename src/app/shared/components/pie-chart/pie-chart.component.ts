@@ -24,8 +24,8 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   chart: Chart | null = null;
   totalValue: number = 0;
-  // Paleta de colores si no vienen definidos
-  defaultColors = ['#E71D36', '#FF9F1C', '#FFBF69', '#FFFFFF', '#CBF3F0', '#2EC4B6', '#1B263B', '#0D1B2A'];
+  // Paleta de colores sin el blanco
+  defaultColors = ['#E71D36', '#FF9F1C', '#FFBF69', '#0D1B2A', '#CBF3F0', '#2EC4B6', '#1B263B']; // Blanco eliminado
 
   // Propiedad para animación (opcional)
   animatedValue: number = 0;
@@ -105,6 +105,7 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.totalValue = this.data.reduce((sum, item) => sum + item.value, 0);
     const labels = this.data.map(item => item.label);
     const values = this.data.map(item => item.value);
+    // Usa el operador módulo para ciclar a través de los colores si hay más datos que colores
     const colors = this.data.map((item, index) => item.color || this.defaultColors[index % this.defaultColors.length]);
     // Actualizamos los datos para la leyenda personalizada
     this.data.forEach((item, index) => item.color = colors[index]);
