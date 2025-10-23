@@ -150,7 +150,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <app-kpi-card
               title="Encuestas"
-              [value]="kpis.totalEncuestas ?? 0"
+              [value]="kpis.totalEncuestas"
               description="Total realizadas"
               iconClass="fas fa-poll"
             ></app-kpi-card>
@@ -194,32 +194,37 @@
             Cargando resultados...
           </div>
 
-          <div
-            *ngIf="!isLoadingQuestions && surveyQuestions.length > 0"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
-          >
+          <div *ngIf="!isLoadingQuestions && surveyQuestions.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             <ng-container *ngFor="let question of surveyQuestions">
-              <ng-container
-                *ngIf="questionResults[question.id_pregunta] as results"
-              >
+              <ng-container *ngIf="questionResults[question.id_pregunta] as results">
                 <div *ngIf="results.length > 0">
-                  <div *ngIf="results.length <= 5; else barChartBlock">
-                    <app-pie-chart
+
+                  <ng-container *ngIf="results.length === 2; else otherCharts">
+                    <app-gauge-chart
                       [title]="question.texto_pregunta"
-                      description="Distribución de respuestas"
-                      [data]="results"
-                    >
-                    </app-pie-chart>
-                  </div>
-                  <ng-template #barChartBlock>
-                    <app-bar-chart
-                      [title]="question.texto_pregunta"
-                      description="Distribución de respuestas"
-                      [data]="results"
-                    >
-                    </app-bar-chart>
+                      description="Proporción"
+                      [data]="results">
+                    </app-gauge-chart>
+                  </ng-container>
+
+                  <ng-template #otherCharts>
+                    <div *ngIf="results.length > 2 && results.length <= 6; else barChartBlock">
+                      <app-pie-chart
+                        [title]="question.texto_pregunta"
+                        description="Distribución"
+                        [data]="results">
+                      </app-pie-chart>
+                    </div>
+                    <ng-template #barChartBlock>
+                      <app-bar-chart
+                        [title]="question.texto_pregunta"
+                        description="Distribución"
+                        [data]="results">
+                      </app-bar-chart>
+                    </ng-template>
                   </ng-template>
-                </div>
+
+                  </div>
               </ng-container>
             </ng-container>
           </div>

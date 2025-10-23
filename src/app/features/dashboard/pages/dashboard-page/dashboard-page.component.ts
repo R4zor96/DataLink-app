@@ -16,6 +16,7 @@ import {
   QuestionResultDto
 } from '../../../../shared/models/dashboard.models';
 import { forkJoin, Observable } from 'rxjs';
+import { GaugeChartComponent } from '../../../../shared/components/gauge-chart/gauge-chart.component';
 
 // Interfaz para las preguntas de encuesta
 interface SurveyQuestion {
@@ -32,7 +33,8 @@ interface SurveyQuestion {
     KpiCardComponent,
     HeatmapMapComponent,
     PieChartComponent,
-    BarChartComponent
+    BarChartComponent,
+    GaugeChartComponent
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.css'
