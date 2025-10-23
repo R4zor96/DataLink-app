@@ -1,6 +1,16 @@
-import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import {
+  Component,
+  Input,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  OnChanges,
+  SimpleChanges,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto'; // Importa Chart.js
+import { DEFAULT_CHART_COLORS } from '../../../shared/constants/chart-colors';
 
 // Interfaz para los datos de entrada
 interface ChartDataItem {
@@ -25,8 +35,7 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   chart: Chart | null = null;
   totalValue: number = 0;
   // Paleta de colores sin el blanco
-  defaultColors = ['#E71D36', '#FF9F1C', '#FFBF69', '#0D1B2A', '#CBF3F0', '#2EC4B6', '#1B263B']; // Blanco eliminado
-
+  defaultColors = DEFAULT_CHART_COLORS;
   // Propiedad para animación (opcional)
   animatedValue: number = 0;
 
@@ -58,13 +67,15 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
       type: 'doughnut', // Tipo dona para poner valor central
       data: {
         labels: chartData.labels,
-        datasets: [{
-          data: chartData.values,
-          backgroundColor: chartData.colors,
-          borderColor: '#ffffff', // Borde blanco entre segmentos
-          borderWidth: 2,
-          hoverOffset: 5,
-        }]
+        datasets: [
+          {
+            data: chartData.values,
+            backgroundColor: chartData.colors,
+            borderColor: '#ffffff', // Borde blanco entre segmentos
+            borderWidth: 2,
+            hoverOffset: 5,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -72,20 +83,24 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
         cutout: '70%', // Tamaño del agujero central
         plugins: {
           legend: {
-            display: false // Ocultamos la leyenda por defecto, usamos la personalizada
+            display: false, // Ocultamos la leyenda por defecto, usamos la personalizada
           },
           tooltip: {
-            callbacks: { // Formato del tooltip
+            callbacks: {
+              // Formato del tooltip
               label: (context) => {
                 const label = context.label || '';
                 const value = context.parsed || 0;
-                const percentage = this.totalValue > 0 ? ((value / this.totalValue) * 100).toFixed(1) : 0;
+                const percentage =
+                  this.totalValue > 0
+                    ? ((value / this.totalValue) * 100).toFixed(1)
+                    : 0;
                 return `${label}: ${value} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     this.animateTotalValue(); // Anima el valor central
@@ -101,14 +116,14 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.animateTotalValue();
   }
 
-  prepareChartData(): { labels: string[], values: number[], colors: string[] } {
+  prepareChartData(): { labels: string[]; values: number[]; colors: string[] } {
     this.totalValue = this.data.reduce((sum, item) => sum + item.value, 0);
-    const labels = this.data.map(item => item.label);
-    const values = this.data.map(item => item.value);
+    const labels = this.data.map((item) => item.label);
+    const values = this.data.map((item) => item.value);
     // Usa el operador módulo para ciclar a través de los colores si hay más datos que colores
     const colors = this.data.map((item, index) => item.color || this.defaultColors[index % this.defaultColors.length]);
     // Actualizamos los datos para la leyenda personalizada
-    this.data.forEach((item, index) => item.color = colors[index]);
+    this.data.forEach((item, index) => (item.color = colors[index]));
     return { labels, values, colors };
   }
 

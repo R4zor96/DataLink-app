@@ -1,6 +1,8 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
+// 👇 1. Importa la constante de colores
+import { DEFAULT_CHART_COLORS } from '../../../shared/constants/chart-colors';
 
 // Interfaz para los datos de entrada
 interface ChartDataItem {
@@ -13,17 +15,17 @@ interface ChartDataItem {
   selector: 'app-bar-chart',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './bar-chart.component.html', // Usaremos un canvas en lugar de divs
+  templateUrl: './bar-chart.component.html',
 })
 export class BarChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() title: string = 'Gráfico de Barras';
   @Input() description: string = 'Comparativa';
   @Input() data: ChartDataItem[] = [];
 
-  // Usaremos un canvas para Chart.js
   @ViewChild('barCanvas') barCanvas!: ElementRef<HTMLCanvasElement>;
   chart: Chart | null = null;
-  defaultColors = ['#E71D36', '#FF9F1C', '#FFBF69', '#CBF3F0', '#2EC4B6', '#1B263B', '#0D1B2A'];
+  // 👇 2. Usa la constante importada
+  defaultColors = DEFAULT_CHART_COLORS;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.chart) {
@@ -55,30 +57,30 @@ export class BarChartComponent implements AfterViewInit, OnChanges, OnDestroy {
         datasets: [{
           data: chartData.values,
           backgroundColor: chartData.colors,
-          borderRadius: 4, // Bordes redondeados
+          borderRadius: 4,
           borderSkipped: false,
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        indexAxis: 'y', // Hace las barras horizontales si hay muchas etiquetas
+        indexAxis: 'y', // Barras horizontales
         scales: {
-          x: { // Eje X (valores)
+          x: {
              beginAtZero: true,
              grid: { display: false },
              ticks: { font: { size: 10 } }
           },
-          y: { // Eje Y (etiquetas)
+          y: {
              grid: { display: false },
              ticks: { font: { size: 10 } }
           }
         },
         plugins: {
-          legend: { display: false }, // Sin leyenda general
+          legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (context) => `${context.label}: ${context.parsed.x || context.parsed.y || 0}` // Muestra valor
+              label: (context) => `${context.label}: ${context.parsed.x ?? context.parsed.y ?? 0}` // Muestra valor (ajustado para eje x o y)
             }
           }
         }
@@ -98,6 +100,7 @@ export class BarChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   prepareChartData(): { labels: string[], values: number[], colors: string[] } {
     const labels = this.data.map(item => item.label);
     const values = this.data.map(item => item.value);
+    // La lógica aquí usa this.defaultColors correctamente
     const colors = this.data.map((item, index) => item.color || this.defaultColors[index % this.defaultColors.length]);
     return { labels, values, colors };
   }

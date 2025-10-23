@@ -1,6 +1,8 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
+// 👇 1. Importa la constante de colores
+import { DEFAULT_CHART_COLORS } from '../../../shared/constants/chart-colors';
 
 // Interfaz para los datos (reutilizamos la misma)
 interface ChartDataItem {
@@ -25,19 +27,23 @@ export class GaugeChartComponent implements AfterViewInit, OnChanges, OnDestroy 
   chart: Chart | null = null;
   displayValue: string = 'N/A'; // Valor a mostrar en el centro
 
-  // Paleta de colores base (puedes ajustar)
-  defaultColors = ['#E71D36', '#FF9F1C', '#0D1B2A', '#2EC4B6'];
+  // 👇 2. Usa la constante importada
+  defaultColors = DEFAULT_CHART_COLORS;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.chart && this.data.length === 2) {
       this.updateChart();
-    } else if (this.chart) {
+    } else if (this.chart && (!changes['data'].currentValue || changes['data'].currentValue.length !== 2)) { // Verifica si los datos cambiaron a algo != 2
       // Si los datos no son 2, limpia el gráfico
       this.clearChart();
+    } else if (!this.chart && changes['data']?.currentValue?.length === 2) {
+       // Si no había gráfico pero ahora hay datos válidos, créalo
+       this.createChart();
     }
   }
 
   ngAfterViewInit(): void {
+    // Solo crea el gráfico si ya hay datos válidos al inicio
     if (this.data.length === 2) {
       this.createChart();
     }
@@ -66,10 +72,9 @@ export class GaugeChartComponent implements AfterViewInit, OnChanges, OnDestroy 
           backgroundColor: chartData.colors,
           borderColor: '#ffffff',
           borderWidth: 2,
-          hoverOffset: 8, // Aumenta un poco el hover
-          // Configuración específica para Gauge
-          circumference: 180, // Medio círculo
-          rotation: -90,      // Empieza desde abajo
+          hoverOffset: 8,
+          circumference: 180,
+          rotation: -90,
         }]
       },
       options: {
@@ -77,14 +82,14 @@ export class GaugeChartComponent implements AfterViewInit, OnChanges, OnDestroy 
         maintainAspectRatio: false,
         cutout: '70%',
         plugins: {
-          legend: { display: false }, // Usamos leyenda personalizada
+          legend: { display: false },
           tooltip: {
-            enabled: true, // Habilitamos tooltips básicos
+            enabled: true,
              callbacks: {
               label: (context) => {
                 const label = context.label || '';
                 const value = context.parsed || 0;
-                const total = this.data.reduce((sum, item) => sum + item.value, 0);
+                const total = this.data.reduce((sum, item) => sum + item.value, 0); // Recalcula el total aquí
                 const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                 return `${label}: ${value} (${percentage}%)`;
               }
@@ -97,7 +102,7 @@ export class GaugeChartComponent implements AfterViewInit, OnChanges, OnDestroy 
 
   updateChart(): void {
     if (!this.chart || this.data.length !== 2) {
-       this.clearChart(); // Limpia si los datos ya no son 2
+       this.clearChart();
        return;
     };
     const chartData = this.prepareChartData();
@@ -112,7 +117,6 @@ export class GaugeChartComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.chart?.destroy();
     this.chart = null;
     this.displayValue = 'N/A';
-    // Podrías limpiar el canvas si es necesario
     const ctx = this.gaugeCanvas?.nativeElement?.getContext('2d');
     if (ctx) {
         ctx.clearRect(0, 0, this.gaugeCanvas.nativeElement.width, this.gaugeCanvas.nativeElement.height);
@@ -121,16 +125,16 @@ export class GaugeChartComponent implements AfterViewInit, OnChanges, OnDestroy 
 
 
   prepareChartData(): { labels: string[], values: number[], colors: string[] } {
-    if (this.data.length !== 2) return { labels: [], values: [], colors: [] }; // Guarda por si acaso
+    if (this.data.length !== 2) return { labels: [], values: [], colors: [] };
 
-    // Aseguramos colores distintos para las 2 opciones
+    // Aseguramos colores distintos usando la paleta importada
     const colors = [
-        this.data[0].color || this.defaultColors[0],
-        this.data[1].color || this.defaultColors[1]
+        this.data[0].color || this.defaultColors[0], // Usa el primer color de la paleta
+        this.data[1].color || this.defaultColors[1]  // Usa el segundo color de la paleta
     ];
     // Asigna los colores a los datos para la leyenda
-    this.data[0].color = colors[0];
-    this.data[1].color = colors[1];
+    if(this.data[0]) this.data[0].color = colors[0];
+    if(this.data[1]) this.data[1].color = colors[1];
 
     return {
       labels: this.data.map(item => item.label),
@@ -139,7 +143,6 @@ export class GaugeChartComponent implements AfterViewInit, OnChanges, OnDestroy 
     };
   }
 
-  // Define qué valor mostrar en el centro (ej: el porcentaje del primer elemento)
   setDisplayValue(): void {
       if (this.data.length === 2) {
           const total = this.data[0].value + this.data[1].value;
