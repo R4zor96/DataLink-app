@@ -18,9 +18,9 @@ import 'leaflet.heat';
 
 import { Ubicacion } from '../../../shared/models/dashboard.models';
 
-// Configuración de iconos por defecto (sin cambios)
+// Configuración de iconos por defecto
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
-const iconUrl = 'assets/marker-icon.png'; // Corregido: Faltaba '/' al inicio
+const iconUrl = 'assets/marker-icon.png'; // Corregido
 const shadowUrl = 'assets/marker-shadow.png';
 const iconDefault = L.icon({
   iconRetinaUrl,
@@ -41,50 +41,50 @@ L.Marker.prototype.options.icon = iconDefault;
   templateUrl: './heatmap-map.component.html',
   styleUrl: './heatmap-map.component.css',
 })
-// 3. Implementa OnDestroy
+// Implementa OnDestroy
 export class HeatmapMapComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() data: Ubicacion[] = [];
   @ViewChild('mapContainer') private mapContainer!: ElementRef;
   private map!: L.Map;
-  private heatLayer: any; // Mantenemos 'any' por la naturaleza del plugin
+  private heatLayer: any;
 
   ngAfterViewInit(): void {
-    this.initMap();
+    // Retrasamos ligeramente la inicialización
+    setTimeout(() => this.initMap(), 0);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Actualiza solo si el mapa ya existe
     if (changes['data'] && this.map) {
       this.updateHeatmap();
     }
   }
 
-  // 4. Implementa el método ngOnDestroy
   ngOnDestroy(): void {
     if (this.map) {
-      this.map.off(); // Desvincula listeners de eventos
-      this.map.remove(); // Elimina el mapa y libera recursos
+      this.map.off(); // Desvincula listeners
+      this.map.remove(); // Elimina el mapa
     }
   }
 
   private initMap(): void {
-    // Evita inicializar el mapa dos veces
-    if (this.map) { return; }
+    // Evita doble inicialización
+    if (this.map || !this.mapContainer?.nativeElement) return;
 
     this.map = L.map(this.mapContainer.nativeElement, {
-      center: [19.3191, -98.2386],
+      center: [19.3191, -98.2386], // Centro de Tlaxcala
       zoom: 9,
     });
 
-    // Usas el mapa base minimalista (correcto)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 18,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      attribution: '&copy; OpenStreetMap &copy; CARTO' // Atribución simplificada
     }).addTo(this.map);
 
-    // Forzar redimensionamiento (correcto)
+    // Invalidar tamaño con retraso
     setTimeout(() => {
-      this.map?.invalidateSize(); // Usar '?' por seguridad
-    }, 0);
+      this.map?.invalidateSize();
+    }, 100);
 
     this.updateHeatmap();
   }
@@ -94,26 +94,29 @@ export class HeatmapMapComponent implements OnChanges, AfterViewInit, OnDestroy 
 
     if (this.heatLayer) {
       this.map.removeLayer(this.heatLayer);
-      this.heatLayer = null; // Limpia la referencia
+      this.heatLayer = null;
     }
 
-    if (!this.data || this.data.length === 0) {
-        return; // No hay datos, no creamos nueva capa
-    }
+    if (!this.data || this.data.length === 0) return;
 
     const heatPoints = this.data.map((p) => [
       parseFloat(p.latitud),
       parseFloat(p.longitud),
-      0.5, // Intensidad por defecto
+      0.5, // Intensidad
     ]);
 
-    // 5. Asegúrate de usar el type casting (L as any) (correcto)
-    this.heatLayer = (L as any)
-      .heatLayer(heatPoints, {
+    // Verificación y Uso Explícito
+    const heatLayerFn = (L as any).heatLayer;
+
+    if (typeof heatLayerFn === 'function') {
+      console.log("leaflet.heat cargado correctamente."); // Mensaje para depuración
+      this.heatLayer = heatLayerFn(heatPoints, { // Llama a la función obtenida
         radius: 25,
         blur: 15,
         maxZoom: 12,
-      })
-      .addTo(this.map);
+      }).addTo(this.map);
+    } else {
+      console.error("Error: La función L.heatLayer no se encontró. El plugin 'leaflet.heat' no se cargó correctamente en producción.");
+    }
   }
 }
