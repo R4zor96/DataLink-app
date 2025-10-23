@@ -1,90 +1,55 @@
 <div class="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8">
   <div class="max-w-7xl mx-auto space-y-6">
 
-    <!-- Título -->
     <h1 class="text-3xl font-bold text-brand-red mb-6">Dashboard Electoral Tlaxcala</h1>
 
-    <!-- Filtros en cascada (SIN CAMBIOS ESTRUCTURALES) -->
     <div class="bg-white shadow-md rounded-lg p-6">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-semibold text-slate-700">Filtros</h2>
         <div *ngIf="isLoadingFilters" class="text-slate-500 text-sm">Cargando opciones...</div>
-        <button (click)="resetFilters()"
-                [disabled]="isLoading || isLoadingFilters"
-                class="inline-flex items-center px-3 py-1.5 border border-slate-300 text-xs font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50">
+        <button (click)="resetFilters()" [disabled]="isLoading || isLoadingFilters" class="inline-flex items-center px-3 py-1.5 border border-slate-300 shadow-sm text-xs font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-red">
           Limpiar Filtros
         </button>
       </div>
-
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-
-        <!-- Estado -->
         <div>
           <label for="estado-select" class="block text-xs font-medium text-slate-700">Estado</label>
-          <select id="estado-select" [(ngModel)]="currentFilters.id_estado"
-                  (change)="onEstadoChange()"
-                  [disabled]="isLoadingFilters || estados.length <= 1"
-                  class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md">
+          <select id="estado-select" [(ngModel)]="currentFilters.id_estado" (change)="onEstadoChange()" [disabled]="isLoadingFilters || estados.length <= 1" class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red disabled:bg-slate-100">
             <option [value]="'all'" [disabled]="estados.length === 1">Todos</option>
             <option *ngFor="let estado of estados" [value]="estado.id">{{ estado.nombre }}</option>
           </select>
         </div>
-
-        <!-- Distrito Federal -->
         <div>
           <label class="block text-xs font-medium text-slate-700">Distrito Federal</label>
-          <select [(ngModel)]="currentFilters.id_distrito_federal"
-                  (change)="onFederalDistrictChange()"
-                  [disabled]="isLoadingFilters || currentFilters.id_estado === 'all'"
-                  class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md">
+          <select [(ngModel)]="currentFilters.id_distrito_federal" (change)="onFederalDistrictChange()" [disabled]="isLoadingFilters || currentFilters.id_estado === 'all'" class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red disabled:bg-slate-100">
             <option [value]="'all'">Todos</option>
             <option *ngFor="let df of distritosFederales" [value]="df.id">{{ df.nombre }}</option>
           </select>
         </div>
-
-        <!-- Distrito Local -->
         <div>
           <label class="block text-xs font-medium text-slate-700">Distrito Local</label>
-          <select [(ngModel)]="currentFilters.id_distrito_local"
-                  (change)="onLocalDistrictChange()"
-                  [disabled]="isLoadingFilters || currentFilters.id_distrito_federal === 'all'"
-                  class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md">
+          <select [(ngModel)]="currentFilters.id_distrito_local" (change)="onLocalDistrictChange()" [disabled]="isLoadingFilters || currentFilters.id_distrito_federal === 'all'" class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red disabled:bg-slate-100">
             <option [value]="'all'">Todos</option>
             <option *ngFor="let dl of distritosLocales" [value]="dl.id">{{ dl.nombre }}</option>
           </select>
         </div>
-
-        <!-- Municipio -->
         <div>
           <label class="block text-xs font-medium text-slate-700">Municipio</label>
-          <select [(ngModel)]="currentFilters.id_municipio"
-                  (change)="onMunicipioChange()"
-                  [disabled]="isLoadingFilters || currentFilters.id_distrito_local === 'all'"
-                  class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md">
+          <select [(ngModel)]="currentFilters.id_municipio" (change)="onMunicipioChange()" [disabled]="isLoadingFilters || currentFilters.id_distrito_local === 'all'" class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red disabled:bg-slate-100">
             <option [value]="'all'">Todos</option>
             <option *ngFor="let municipio of municipios" [value]="municipio.id">{{ municipio.nombre }}</option>
           </select>
         </div>
-
-        <!-- Sección -->
         <div>
           <label class="block text-xs font-medium text-slate-700">Sección</label>
-          <select [(ngModel)]="currentFilters.id_seccion"
-                  (change)="onSeccionChange()"
-                  [disabled]="isLoadingFilters || currentFilters.id_municipio === 'all'"
-                  class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md">
+          <select [(ngModel)]="currentFilters.id_seccion" (change)="onSeccionChange()" [disabled]="isLoadingFilters || currentFilters.id_municipio === 'all'" class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red disabled:bg-slate-100">
             <option [value]="'all'">Todas</option>
             <option *ngFor="let seccion of secciones" [value]="seccion.id">{{ seccion.nombre }}</option>
           </select>
         </div>
-
-        <!-- Comunidad -->
         <div>
           <label class="block text-xs font-medium text-slate-700">Comunidad</label>
-          <select [(ngModel)]="currentFilters.id_comunidad"
-                  (change)="onComunidadChange()"
-                  [disabled]="isLoadingFilters || currentFilters.id_seccion === 'all'"
-                  class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md">
+          <select [(ngModel)]="currentFilters.id_comunidad" (change)="onComunidadChange()" [disabled]="isLoadingFilters || currentFilters.id_seccion === 'all'" class="mt-1 block w-full pl-3 pr-8 py-1.5 text-sm border-gray-300 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red disabled:bg-slate-100">
             <option [value]="'all'">Todas</option>
             <option *ngFor="let comunidad of comunidades" [value]="comunidad.id">{{ comunidad.nombre }}</option>
           </select>
@@ -92,34 +57,31 @@
       </div>
     </div>
 
-    <!-- Mensaje de carga general -->
     <div *ngIf="isLoading || isLoadingQuestions" class="text-center text-lg text-slate-600 my-6">
       Cargando datos...
     </div>
 
-    <!-- Contenido principal -->
     <ng-container *ngIf="!isLoading && !isLoadingQuestions">
       <div *ngIf="kpisGenerales as kpis" class="space-y-6">
 
-        <!-- Resumen General -->
-        <h2 class="text-lg font-semibold text-slate-800">Resumen General</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <app-kpi-card title="Encuestas" [value]="kpis.totalEncuestas ?? 0" description="Total realizadas" iconClass="fas fa-poll"></app-kpi-card>
-            <ng-container *ngIf="kpis.participacionGenero">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-800 mb-4">Resumen General</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <app-kpi-card title="Encuestas" [value]="kpis.totalEncuestas ?? 0" description="Total realizadas" iconClass="fas fa-poll"></app-kpi-card>
+            <ng-container *ngIf="kpis.participacionGenero && kpis.participacionGenero.length > 0">
               <app-kpi-card *ngFor="let genero of kpis.participacionGenero" [title]="genero.genero" [value]="genero.total" description="Participación" iconClass="fas fa-users"></app-kpi-card>
             </ng-container>
+            </div>
         </div>
 
-        <!-- Mapa en UNA SOLA FILA A LO ANCHO -->
         <div>
           <h2 class="text-lg font-semibold text-slate-800 mb-2">Análisis Geográfico</h2>
           <div class="bg-white shadow-md rounded-lg p-4 h-[400px]">
             <app-heatmap-map [data]="ubicaciones ?? []"></app-heatmap-map>
-            <div *ngIf="!ubicaciones || ubicaciones.length === 0" class="flex items-center justify-center h-full text-slate-500">No hay datos geográficos.</div>
+            <div *ngIf="!ubicaciones || ubicaciones.length === 0" class="flex items-center justify-center h-full text-slate-500 text-sm">No hay datos geográficos.</div>
           </div>
         </div>
 
-        <!-- Resultados por Pregunta -->
         <div class="space-y-4">
           <h2 class="text-xl font-semibold text-slate-800">Resultados por Pregunta</h2>
 
@@ -132,16 +94,14 @@
 
             <ng-container *ngFor="let question of surveyQuestions">
               <ng-container *ngIf="questionResults[question.id_pregunta] as results">
-                <!-- Pie Chart si <=6 opciones -->
                 <div *ngIf="results.length > 0">
-                  <div *ngIf="results.length <= 6; else barChartBlock">
+                  <div *ngIf="results.length <= 6 && results.length > 0; else barChartBlock">
                     <app-pie-chart
                       [title]="question.texto_pregunta"
                       description="Distribución de respuestas"
                       [data]="results">
                     </app-pie-chart>
                   </div>
-
                   <ng-template #barChartBlock>
                     <app-bar-chart
                       [title]="question.texto_pregunta"
@@ -150,7 +110,7 @@
                     </app-bar-chart>
                   </ng-template>
                 </div>
-              </ng-container>
+                </ng-container>
             </ng-container>
           </div>
 
@@ -162,18 +122,12 @@
       </div>
     </ng-container>
 
-    <!-- Mensaje cuando no hay datos -->
     <div *ngIf="!isLoading && !isLoadingQuestions && !kpisGenerales" class="text-center text-lg text-slate-500 my-8">
       Selecciona filtros para ver los datos del dashboard.
     </div>
 
   </div>
 
-  <!-- Plantillas -->
-  <ng-template #noDataTemplate>
-    <p class="text-slate-500 text-xs text-center py-2">No hay datos.</p>
-  </ng-template>
-  <ng-template #noDataPrefTemplate>
-    <p class="text-slate-500 text-xs text-center py-4">No hay datos.</p>
-  </ng-template>
+  <ng-template #noDataTemplate><p class="text-slate-500 text-xs text-center py-2">No hay datos.</p></ng-template>
+  <ng-template #noDataPrefTemplate><p class="text-slate-500 text-xs text-center py-4">No hay datos.</p></ng-template>
 </div>

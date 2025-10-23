@@ -57,8 +57,6 @@ export class DashboardPageComponent implements OnInit {
 
   // ---------------------- DATOS DASHBOARD ----------------------
   kpisGenerales: KpisGenerales | null = null;
-  graficosDemograficos: GraficosDemograficos | null = null;
-  preferencias: Preferencia[] | null = null;
   ubicaciones: Ubicacion[] = [];
 
   // ---------------------- PREGUNTAS Y RESULTADOS ----------------------
