@@ -195,18 +195,19 @@
               *ngIf="questionResults[question.id_pregunta] as results"
             >
               <div *ngIf="results.length > 0">
-                <ng-container *ngIf="results.length === 2; else otherCharts">
+                <ng-container *ngIf="results.length === 2; else notGauge">
                   <app-gauge-chart
                     [title]="question.texto_pregunta"
                     description="Proporción"
                     [data]="results"
                   ></app-gauge-chart>
                 </ng-container>
-                <ng-template #otherCharts>
-                  <div
+
+                <ng-template #notGauge>
+                  <ng-container
                     *ngIf="
-                      results.length > 2 && results.length <= 6;
-                      else barChartBlock
+                      results.length > 2 && results.length <= 4;
+                      else notPie
                     "
                   >
                     <app-pie-chart
@@ -214,14 +215,30 @@
                       description="Distribución"
                       [data]="results"
                     ></app-pie-chart>
-                  </div>
-                  <ng-template #barChartBlock>
-                    <app-bar-chart
+                  </ng-container>
+                </ng-template>
+
+                <ng-template #notPie>
+                  <ng-container
+                    *ngIf="
+                      results.length >= 5 && results.length <= 5;
+                      else horizontalBar
+                    "
+                  >
+                    <app-vertical-bar-chart
                       [title]="question.texto_pregunta"
                       description="Distribución"
                       [data]="results"
-                    ></app-bar-chart>
-                  </ng-template>
+                    ></app-vertical-bar-chart>
+                  </ng-container>
+                </ng-template>
+
+                <ng-template #horizontalBar>
+                  <app-bar-chart
+                    [title]="question.texto_pregunta"
+                    description="Distribución"
+                    [data]="results"
+                  ></app-bar-chart>
                 </ng-template>
               </div>
             </ng-container>
