@@ -13,85 +13,80 @@ import {
 } from '../../shared/models/dashboard.models';
 
 @Injectable({
-  providedIn: 'root', // Este servicio se inyecta en el root, por eso va en CoreModule
+  providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:3000/dashboard'; // URL base de tu API NestJS
-  private filterUrl = 'http://localhost:3000/filters'; // URL para obtener las listas de filtros
+  private baseUrl = 'https://data-link-api.vercel.app';
 
   constructor(private http: HttpClient) {}
 
-  // Helper para construir los parámetros de la URL
+  // Función auxiliar para construir parámetros (mejorada y segura)
   private buildParams(filters?: DashboardFilters): HttpParams {
     let params = new HttpParams();
     if (filters) {
-      if (filters.id_distrito_federal) {
-        params = params.set('id_distrito_federal', filters.id_distrito_federal);
-      }
-      if (filters.id_distrito_local) {
-        params = params.set('id_distrito_local', filters.id_distrito_local);
-      }
-      if (filters.id_municipio) {
-        params = params.set('id_municipio', filters.id_municipio);
-      }
+      // Itera sobre las llaves del objeto de filtros
+      (Object.keys(filters) as Array<keyof DashboardFilters>).forEach(key => {
+        // Solo añade el parámetro si la llave existe, tiene valor y no es 'all'
+        if (filters[key] && filters[key] !== 'all') {
+          // Convierte la llave y el valor a string para cumplir la firma de HttpParams.set
+          params = params.set(String(key), String(filters[key]));
+        }
+      });
     }
     return params;
   }
 
+  // --- Métodos de la API (usan this.baseUrl) ---
+
   getKpisGenerales(filters?: DashboardFilters): Observable<KpisGenerales> {
     const params = this.buildParams(filters);
-    return this.http.get<KpisGenerales>(`${this.apiUrl}/kpis-generales`, {
-      params,
-    });
+    // Construye la URL completa
+    return this.http.get<KpisGenerales>(`${this.baseUrl}/dashboard/kpis-generales`, { params });
   }
 
-  getGraficosDemograficos(
-    filters?: DashboardFilters
-  ): Observable<GraficosDemograficos> {
+  getGraficosDemograficos(filters?: DashboardFilters): Observable<GraficosDemograficos> {
     const params = this.buildParams(filters);
-    return this.http.get<GraficosDemograficos>(
-      `${this.apiUrl}/graficos-demograficos`,
-      { params }
-    );
+    // Construye la URL completa
+    return this.http.get<GraficosDemograficos>(`${this.baseUrl}/dashboard/graficos-demograficos`, { params });
   }
 
   getPreferencias(filters?: DashboardFilters): Observable<Preferencia[]> {
-    // 2. El método ahora devuelve un array
     const params = this.buildParams(filters);
-    return this.http
-      .get<PreferenciasResponse>(`${this.apiUrl}/preferencias`, { params }) // 3. Espera el objeto de respuesta
+    // Construye la URL completa
+    return this.http.get<PreferenciasResponse>(`${this.baseUrl}/dashboard/preferencias`, { params })
       .pipe(
-        map((response) => response.preferencias) // 4. Extrae solo el array de adentro
+        map(response => response.preferencias) // Extrae el array
       );
   }
 
   getUbicaciones(filters?: DashboardFilters): Observable<Ubicacion[]> {
     const params = this.buildParams(filters);
-    return this.http.get<Ubicacion[]>(`${this.apiUrl}/ubicaciones`, { params });
+    // Construye la URL completa
+    return this.http.get<Ubicacion[]>(`${this.baseUrl}/dashboard/ubicaciones`, { params });
   }
 
-  // Métodos para obtener las listas de filtros
+  // --- Endpoints de Filtros (usan this.baseUrl) ---
+
   getDistritosFederales(): Observable<Region[]> {
-    return this.http.get<Region[]>(`${this.filterUrl}/distritos-federales`);
+    // Construye la URL completa
+    return this.http.get<Region[]>(`${this.baseUrl}/filters/distritos-federales`);
   }
 
-  //El método ahora acepta un ID opcional
   getDistritosLocales(idDF?: string): Observable<Region[]> {
     let params = new HttpParams();
     if (idDF && idDF !== 'all') {
       params = params.set('id_distrito_federal', idDF);
     }
-    return this.http.get<Region[]>(`${this.filterUrl}/distritos-locales`, {
-      params,
-    });
+    // Construye la URL completa
+    return this.http.get<Region[]>(`${this.baseUrl}/filters/distritos-locales`, { params });
   }
 
-  //El método ahora acepta un ID opcional
   getMunicipios(idDL?: string): Observable<Region[]> {
     let params = new HttpParams();
     if (idDL && idDL !== 'all') {
       params = params.set('id_distrito_local', idDL);
     }
-    return this.http.get<Region[]>(`${this.filterUrl}/municipios`, { params });
+    // Construye la URL completa
+    return this.http.get<Region[]>(`${this.baseUrl}/filters/municipios`, { params });
   }
 }
