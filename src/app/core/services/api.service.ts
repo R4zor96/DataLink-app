@@ -25,7 +25,7 @@ export class ApiService {
     let params = new HttpParams();
     if (filters) {
       // Itera sobre las llaves del objeto de filtros
-      (Object.keys(filters) as Array<keyof DashboardFilters>).forEach(key => {
+      (Object.keys(filters) as Array<keyof DashboardFilters>).forEach((key) => {
         // Solo añade el parámetro si la llave existe, tiene valor y no es 'all'
         if (filters[key] && filters[key] !== 'all') {
           // Convierte la llave y el valor a string para cumplir la firma de HttpParams.set
@@ -41,35 +41,60 @@ export class ApiService {
   getKpisGenerales(filters?: DashboardFilters): Observable<KpisGenerales> {
     const params = this.buildParams(filters);
     // Construye la URL completa
-    return this.http.get<KpisGenerales>(`${this.baseUrl}/dashboard/kpis-generales`, { params });
+    return this.http.get<KpisGenerales>(
+      `${this.baseUrl}/dashboard/kpis-generales`,
+      { params }
+    );
   }
 
-  getGraficosDemograficos(filters?: DashboardFilters): Observable<GraficosDemograficos> {
+  getGraficosDemograficos(
+    filters?: DashboardFilters
+  ): Observable<GraficosDemograficos> {
     const params = this.buildParams(filters);
     // Construye la URL completa
-    return this.http.get<GraficosDemograficos>(`${this.baseUrl}/dashboard/graficos-demograficos`, { params });
+    return this.http.get<GraficosDemograficos>(
+      `${this.baseUrl}/dashboard/graficos-demograficos`,
+      { params }
+    );
   }
 
   getPreferencias(filters?: DashboardFilters): Observable<Preferencia[]> {
     const params = this.buildParams(filters);
     // Construye la URL completa
-    return this.http.get<PreferenciasResponse>(`${this.baseUrl}/dashboard/preferencias`, { params })
+    return this.http
+      .get<PreferenciasResponse>(`${this.baseUrl}/dashboard/preferencias`, {
+        params,
+      })
       .pipe(
-        map(response => response.preferencias) // Extrae el array
+        map((response) => response.preferencias) // Extrae el array
       );
   }
 
   getUbicaciones(filters?: DashboardFilters): Observable<Ubicacion[]> {
     const params = this.buildParams(filters);
     // Construye la URL completa
-    return this.http.get<Ubicacion[]>(`${this.baseUrl}/dashboard/ubicaciones`, { params });
+    return this.http.get<Ubicacion[]>(`${this.baseUrl}/dashboard/ubicaciones`, {
+      params,
+    });
   }
 
-  // --- Endpoints de Filtros (usan this.baseUrl) ---
+  // --- Endpoints de Filtros (actualizados y nuevos) ---
 
-  getDistritosFederales(): Observable<Region[]> {
-    // Construye la URL completa
-    return this.http.get<Region[]>(`${this.baseUrl}/filters/distritos-federales`);
+  getEstados(): Observable<Region[]> {
+    // Nuevo
+    return this.http.get<Region[]>(`${this.baseUrl}/filters/estados`);
+  }
+
+  getDistritosFederales(idEstado?: string): Observable<Region[]> {
+    // Acepta idEstado
+    let params = new HttpParams();
+    if (idEstado && idEstado !== 'all') {
+      params = params.set('id_estado', idEstado);
+    }
+    return this.http.get<Region[]>(
+      `${this.baseUrl}/filters/distritos-federales`,
+      { params }
+    );
   }
 
   getDistritosLocales(idDF?: string): Observable<Region[]> {
@@ -77,8 +102,10 @@ export class ApiService {
     if (idDF && idDF !== 'all') {
       params = params.set('id_distrito_federal', idDF);
     }
-    // Construye la URL completa
-    return this.http.get<Region[]>(`${this.baseUrl}/filters/distritos-locales`, { params });
+    return this.http.get<Region[]>(
+      `${this.baseUrl}/filters/distritos-locales`,
+      { params }
+    );
   }
 
   getMunicipios(idDL?: string): Observable<Region[]> {
@@ -86,7 +113,30 @@ export class ApiService {
     if (idDL && idDL !== 'all') {
       params = params.set('id_distrito_local', idDL);
     }
-    // Construye la URL completa
-    return this.http.get<Region[]>(`${this.baseUrl}/filters/municipios`, { params });
+    return this.http.get<Region[]>(`${this.baseUrl}/filters/municipios`, {
+      params,
+    });
+  }
+
+  getSecciones(idMunicipio?: string): Observable<Region[]> {
+    // Nuevo
+    let params = new HttpParams();
+    if (idMunicipio && idMunicipio !== 'all') {
+      params = params.set('id_municipio', idMunicipio);
+    }
+    return this.http.get<Region[]>(`${this.baseUrl}/filters/secciones`, {
+      params,
+    });
+  }
+
+  getComunidades(idSeccion?: string): Observable<Region[]> {
+    // Nuevo
+    let params = new HttpParams();
+    if (idSeccion && idSeccion !== 'all') {
+      params = params.set('id_seccion', idSeccion);
+    }
+    return this.http.get<Region[]>(`${this.baseUrl}/filters/comunidades`, {
+      params,
+    });
   }
 }
