@@ -10,7 +10,14 @@ import {
   PreferenciasResponse,
   Ubicacion,
   Region,
+  QuestionResultDto
 } from '../../shared/models/dashboard.models';
+
+// Define una interfaz para la pregunta
+interface SurveyQuestion {
+  id_pregunta: number;
+  texto_pregunta: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -138,5 +145,16 @@ export class ApiService {
     return this.http.get<Region[]>(`${this.baseUrl}/filters/comunidades`, {
       params,
     });
+  }
+
+  // --- NUEVOS MÉTODOS ---
+  getSurveyQuestions(idEncuesta: number = 9): Observable<SurveyQuestion[]> {
+     // Podrías añadir idEncuesta como parámetro si es necesario
+     return this.http.get<SurveyQuestion[]>(`${this.baseUrl}/filters/questions`);
+  }
+
+  getQuestionResults(idPregunta: number, filters?: DashboardFilters): Observable<QuestionResultDto[]> {
+     const params = this.buildParams(filters);
+     return this.http.get<QuestionResultDto[]>(`${this.baseUrl}/dashboard/question-results/${idPregunta}`, { params });
   }
 }

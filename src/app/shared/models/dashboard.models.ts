@@ -62,3 +62,8 @@ export interface DashboardFilters {
   id_seccion?: string; // Nuevo
   id_comunidad?: string; // Nuevo
 }
+
+export interface QuestionResultDto { // Asegúrate de que 'export' esté aquí
+  label: string;
+  value: number;
+}
