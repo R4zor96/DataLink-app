@@ -63,7 +63,7 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
           backgroundColor: chartData.colors,
           borderColor: '#ffffff', // Borde blanco entre segmentos
           borderWidth: 2,
-          hoverOffset: 4,
+          hoverOffset: 5,
         }]
       },
       options: {
@@ -115,7 +115,9 @@ export class PieChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   animateTotalValue() {
     // Calcula el porcentaje total (siempre 100% en un pie chart) o un valor relevante
     const targetValue = 100; // O podrías mostrar el totalValue
-    // Implementa una animación simple si lo deseas
-    this.animatedValue = targetValue;
+    // 👇 Envuelve la actualización en setTimeout 👇
+    setTimeout(() => {
+      this.animatedValue = targetValue;
+    }, 0);
   }
 }
