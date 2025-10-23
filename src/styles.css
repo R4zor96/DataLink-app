@@ -1,4 +1,17 @@
 /* src/styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Roboto', sans-serif;
+  }
+}
+
+/* Ajuste global para que el fondo sea el gris claro */
+body {
+  @apply bg-background;
+}

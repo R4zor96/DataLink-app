@@ -1,12 +1,10 @@
-<div class="bg-white rounded-lg shadow-md p-6 h-full">
-  <div class="flex items-start justify-between">
-    <div>
-      <h3 class="text-sm font-semibold uppercase text-slate-500">{{ title }}</h3>
-      <p class="text-4xl font-bold text-brand-red mt-2">{{ value }}</p>
-    </div>
-    <div class="text-2xl text-slate-300">
-      <i [class]="iconClass"></i>
-    </div>
+<div class="bg-white rounded-lg shadow-md p-4 flex items-center space-x-4 h-full">
+  <div class="flex-shrink-0 bg-brand-dark rounded-lg p-3">
+    <i [class]="iconClass" class="text-white text-xl"></i>
   </div>
-  <p *ngIf="description" class="text-xs text-slate-400 mt-3">{{ description }}</p>
+  <div class="flex-1 min-w-0">
+    <p class="text-xs font-medium text-gray-500 uppercase truncate">{{ title }}</p>
+    <p class="text-2xl font-bold text-slate-800 truncate">{{ value }}</p>
+    <p *ngIf="description" class="text-xs text-gray-400 mt-1 truncate">{{ description }}</p>
+  </div>
 </div>

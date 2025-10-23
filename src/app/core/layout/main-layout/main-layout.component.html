@@ -1,14 +1,13 @@
-<div class="flex h-screen bg-slate-100">
-
-  <app-sidebar></app-sidebar>
+<div class="flex h-screen bg-background overflow-hidden">
+  <app-sidebar
+    class="w-64 flex-shrink-0 bg-background-paper shadow-lg"
+  ></app-sidebar>
 
   <div class="flex-1 flex flex-col overflow-hidden">
+    <app-header class="bg-background-paper"></app-header>
 
-    <app-header></app-header>
-
-    <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
+    <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
       <router-outlet></router-outlet>
     </main>
-
   </div>
 </div>
