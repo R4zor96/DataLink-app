@@ -17,8 +17,9 @@ const routes: Routes = [
   },
   {
     // 👇 Nueva ruta para generar los reportes
-    path: 'reports',
-    component: ReportGeneratorComponent
+     path: 'reports',
+    loadComponent: () => import('../reports/report-generator/report-generator.component')
+      .then(m => m.ReportGeneratorComponent) // ✅ Forma correcta para standalone
   }
 ];
 

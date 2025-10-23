@@ -2,14 +2,17 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { DashboardRoutingModule } from './dashboard-routing.module';
-import { SharedModule } from '../../shared/shared.module'; // Importa SharedModule
+import { SharedModule } from '../../shared/shared.module';
+
+// 👇 NO necesitas importar el componente standalone aquí
+// import { ReportGeneratorComponent } from '../reports/report-generator/report-generator.component';
 
 @NgModule({
-  declarations: [], // Vacío porque DashboardPageComponent es standalone
+  declarations: [], // <-- Deja vacío
   imports: [
     CommonModule,
-    DashboardRoutingModule, // Conecta el archivo de rutas
-    SharedModule            // Permite usar los componentes compartidos
+    DashboardRoutingModule,
+    SharedModule
   ]
 })
 export class DashboardModule { }
