@@ -9,9 +9,8 @@
   html {
     font-family: 'Roboto', sans-serif;
   }
-}
-
-/* Ajuste global para que el fondo sea el gris claro */
-body {
-  @apply bg-background;
+  /* Fondo general claro */
+  body {
+    @apply bg-background;
+  }
 }

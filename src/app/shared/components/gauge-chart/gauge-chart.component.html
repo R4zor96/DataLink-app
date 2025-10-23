@@ -1,26 +1,23 @@
-<div class="bg-white rounded-lg shadow-md p-4 w-full h-full flex flex-col">
-  <div class="flex items-start justify-between mb-2 flex-shrink-0">
-    <div>
-      <h3 class="text-base font-semibold text-slate-700">{{ title }}</h3>
-      <p class="text-xs text-gray-500 mt-0.5">{{ description }}</p>
-    </div>
-    <div class="text-brand-red text-lg">
-      <i class="fas fa-tachometer-alt-fast"></i>
-    </div>
+<div class="bg-white rounded-xl border border-slate-200 p-6 w-full h-full flex flex-col">
+  <div class="mb-4 flex-shrink-0">
+    <h3 class="text-base font-semibold text-slate-800">{{ title }}</h3>
+    <p class="text-sm text-gray-500 mt-1">{{ description }}</p>
   </div>
 
-   <div class="relative flex items-center justify-center h-40 mb-2 flex-shrink-0">
+  <div class="relative flex items-center justify-center h-40 mb-2 flex-shrink-0">
     <canvas #gaugeCanvas class="max-w-[200px] max-h-[100px]"></canvas>
     <div class="absolute bottom-1 flex flex-col items-center justify-center">
-      <p class="text-2xl font-bold text-brand-dark">{{ displayValue }}</p>
+      <p class="text-2xl font-bold text-slate-800">{{ displayValue }}</p>
       <p class="text-xs text-gray-500">{{ data[0]?.label || 'Valor' }}</p>
     </div>
   </div>
 
-  <div class="flex justify-center space-x-4 text-xs text-gray-700 mt-auto pt-2 border-t border-slate-100 flex-shrink-0">
+  <div class="flex justify-center space-x-4 text-xs text-gray-700 flex-grow items-center">
     <div class="flex items-center space-x-1.5" *ngFor="let item of data">
-      <span class="w-3 h-3 rounded-sm shadow-sm flex-shrink-0" [style.backgroundColor]="item.color"></span>
+      <span class="w-3 h-3 rounded-sm flex-shrink-0" [style.backgroundColor]="item.color"></span>
       <span class="truncate">{{ item.label }}</span>
     </div>
   </div>
+
+
 </div>
