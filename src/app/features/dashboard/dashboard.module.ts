@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { DashboardRoutingModule } from './dashboard-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 
+import { FormsModule } from '@angular/forms';
+
 // 👇 NO necesitas importar el componente standalone aquí
 // import { ReportGeneratorComponent } from '../reports/report-generator/report-generator.component';
 
@@ -13,6 +15,7 @@ import { SharedModule } from '../../shared/shared.module';
     CommonModule,
     DashboardRoutingModule,
     SharedModule
-  ]
+  ],
+  
 })
 export class DashboardModule { }
