@@ -4,20 +4,30 @@
     <p class="text-sm text-gray-500 mt-1">{{ description }}</p>
   </div>
 
-  <div class="relative flex items-center justify-center h-48 mb-4 flex-shrink-0">
+  <div class="relative flex items-center justify-center h-48 mb-4 flex-shrink-0 z-10">
     <canvas #pieCanvas class="max-w-[180px] max-h-[180px]"></canvas>
-    <div class="absolute flex flex-col items-center justify-center">
-      <p class="text-2xl font-bold text-slate-800">{{ animatedValue }}%</p>
-      <p class="text-xs text-gray-500">Total</p>
+
+    <div class="absolute flex flex-col items-center justify-center z-0">
+      <p class="text-2xl font-bold text-slate-800">
+        {{ animatedValue }}<span class="text-xl">%</span>
+      </p>
+      <p
+        class="text-xs text-gray-500 truncate max-w-[100px]"
+        [title]="animatedLabel">
+        {{ animatedLabel }}
+      </p>
     </div>
   </div>
 
-  <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-gray-700 overflow-y-auto min-h-0 flex-grow">
-    <div class="flex items-center space-x-1.5" *ngFor="let item of data">
+  <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-gray-700 mt-auto flex-shrink-0">
+    <div class="flex items-center space-x-1.5" *ngFor="let item of legendData">
       <span class="w-3 h-3 rounded-sm flex-shrink-0" [style.backgroundColor]="item.color"></span>
       <span class="truncate">{{ item.label }}</span>
     </div>
   </div>
 
-
+   <div class="mt-4 pt-2 border-t border-slate-100 text-xs text-gray-400 flex items-center flex-shrink-0">
+    <i class="far fa-clock mr-1.5"></i>
+    <span>Actualizado recientemente</span>
+  </div>
 </div>
