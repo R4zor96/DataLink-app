@@ -5,95 +5,119 @@ import { Observable } from 'rxjs';
 import {
   DashboardFilters,
   KpisGenerales,
-  GraficosDemograficos,
-  Preferencia,
-  PreferenciasResponse,
   Ubicacion,
   Region,
-  QuestionResultDto
+  QuestionResultDto,
+  SurveyQuestion, // Importado desde los modelos
+  QuestionOption, // Importado desde los modelos
 } from '../../shared/models/dashboard.models';
-
-// Define una interfaz para la pregunta
-interface SurveyQuestion {
-  id_pregunta: number;
-  texto_pregunta: string;
-}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://data-link-api.vercel.app';
+  private baseUrl = 'https://data-link-api.vercel.app'; // URL de Vercel
+  //private baseUrl = 'http://localhost:3000'; // URL local
 
   constructor(private http: HttpClient) {}
 
-  // Función auxiliar para construir parámetros (mejorada y segura)
+  /**
+   * Construye los HttpParams de forma segura, separando la lógica
+   * de los filtros geográficos y los filtros de respuesta.
+   */
   private buildParams(filters?: DashboardFilters): HttpParams {
     let params = new HttpParams();
-    if (filters) {
-      // Itera sobre las llaves del objeto de filtros
-      (Object.keys(filters) as Array<keyof DashboardFilters>).forEach((key) => {
-        // Solo añade el parámetro si la llave existe, tiene valor y no es 'all'
-        if (filters[key] && filters[key] !== 'all') {
-          // Convierte la llave y el valor a string para cumplir la firma de HttpParams.set
-          params = params.set(String(key), String(filters[key]));
-        }
-      });
+    if (!filters) {
+      return params;
     }
+
+    // 1. Manejar filtros geográficos estáticos (Forma segura y explícita)
+
+    // 👇 Define un TIPO específico solo para las claves geográficas
+    type GeoFilterKey =
+      | 'id_estado'
+      | 'id_distrito_federal'
+      | 'id_distrito_local'
+      | 'id_municipio'
+      | 'id_seccion'
+      | 'id_comunidad';
+
+    // 👇 Usa ese TIPO para el array
+    const geoKeys: GeoFilterKey[] = [
+      'id_estado',
+      'id_distrito_federal',
+      'id_distrito_local',
+      'id_municipio',
+      'id_seccion',
+      'id_comunidad',
+    ];
+
+    // Itera solo sobre las claves geográficas conocidas
+    geoKeys.forEach((key) => {
+      // Ahora TypeScript sabe que 'key' es GeoFilterKey,
+      // por lo tanto 'filters[key]' solo puede ser 'string | undefined'
+      const value = filters[key];
+      if (value && value !== 'all') {
+        params = params.set(key, value); // ✅ Esto ahora es 100% seguro y no da error
+      }
+    });
+
+    // 2. Manejar filtro de respuestas (answerFilters)
+    if (filters.answerFilters) {
+      const answerFiltersString = JSON.stringify(filters.answerFilters);
+      // Solo añade el parámetro si no es un objeto vacío
+      if (answerFiltersString !== '{}') {
+        params = params.set('answerFilters', answerFiltersString);
+      }
+    }
+
     return params;
   }
 
-  // --- Métodos de la API (usan this.baseUrl) ---
+  // --- MÉTODOS DE API PRINCIPALES ---
 
+  /**
+   * Obtiene los KPIs. Ahora se filtra por geografía Y respuestas.
+   */
   getKpisGenerales(filters?: DashboardFilters): Observable<KpisGenerales> {
     const params = this.buildParams(filters);
-    // Construye la URL completa
     return this.http.get<KpisGenerales>(
       `${this.baseUrl}/dashboard/kpis-generales`,
       { params }
     );
   }
 
-  getGraficosDemograficos(
-    filters?: DashboardFilters
-  ): Observable<GraficosDemograficos> {
-    const params = this.buildParams(filters);
-    // Construye la URL completa
-    return this.http.get<GraficosDemograficos>(
-      `${this.baseUrl}/dashboard/graficos-demograficos`,
-      { params }
-    );
-  }
-
-  getPreferencias(filters?: DashboardFilters): Observable<Preferencia[]> {
-    const params = this.buildParams(filters);
-    // Construye la URL completa
-    return this.http
-      .get<PreferenciasResponse>(`${this.baseUrl}/dashboard/preferencias`, {
-        params,
-      })
-      .pipe(
-        map((response) => response.preferencias) // Extrae el array
-      );
-  }
-
+  /**
+   * Obtiene las ubicaciones. Ahora se filtra por geografía Y respuestas.
+   */
   getUbicaciones(filters?: DashboardFilters): Observable<Ubicacion[]> {
     const params = this.buildParams(filters);
-    // Construye la URL completa
     return this.http.get<Ubicacion[]>(`${this.baseUrl}/dashboard/ubicaciones`, {
       params,
     });
   }
 
-  // --- Endpoints de Filtros (actualizados y nuevos) ---
+  /**
+   * Obtiene los resultados de UNA pregunta. Ahora se filtra por geografía Y respuestas.
+   */
+  getQuestionResults(
+    idPregunta: number,
+    filters?: DashboardFilters
+  ): Observable<QuestionResultDto[]> {
+    const params = this.buildParams(filters);
+    return this.http.get<QuestionResultDto[]>(
+      `${this.baseUrl}/dashboard/question-results/${idPregunta}`,
+      { params }
+    );
+  }
+
+  // --- MÉTODOS PARA OBTENER OPCIONES DE FILTROS ---
 
   getEstados(): Observable<Region[]> {
-    // Nuevo
     return this.http.get<Region[]>(`${this.baseUrl}/filters/estados`);
   }
 
   getDistritosFederales(idEstado?: string): Observable<Region[]> {
-    // Acepta idEstado
     let params = new HttpParams();
     if (idEstado && idEstado !== 'all') {
       params = params.set('id_estado', idEstado);
@@ -126,7 +150,6 @@ export class ApiService {
   }
 
   getSecciones(idMunicipio?: string): Observable<Region[]> {
-    // Nuevo
     let params = new HttpParams();
     if (idMunicipio && idMunicipio !== 'all') {
       params = params.set('id_municipio', idMunicipio);
@@ -137,7 +160,6 @@ export class ApiService {
   }
 
   getComunidades(idSeccion?: string): Observable<Region[]> {
-    // Nuevo
     let params = new HttpParams();
     if (idSeccion && idSeccion !== 'all') {
       params = params.set('id_seccion', idSeccion);
@@ -147,14 +169,22 @@ export class ApiService {
     });
   }
 
-  // --- NUEVOS MÉTODOS ---
+  /**
+   * Obtiene la lista de todas las preguntas de la encuesta.
+   */
   getSurveyQuestions(idEncuesta: number = 9): Observable<SurveyQuestion[]> {
-     // Podrías añadir idEncuesta como parámetro si es necesario
-     return this.http.get<SurveyQuestion[]>(`${this.baseUrl}/filters/questions`);
+    return this.http.get<SurveyQuestion[]>(`${this.baseUrl}/filters/questions`);
   }
 
-  getQuestionResults(idPregunta: number, filters?: DashboardFilters): Observable<QuestionResultDto[]> {
-     const params = this.buildParams(filters);
-     return this.http.get<QuestionResultDto[]>(`${this.baseUrl}/dashboard/question-results/${idPregunta}`, { params });
+  /**
+   * Obtiene las opciones (checkboxes) para una pregunta específica.
+   */
+  getOptionsForQuestion(idPregunta: number): Observable<QuestionOption[]> {
+    return this.http.get<QuestionOption[]>(
+      `${this.baseUrl}/filters/options/${idPregunta}`
+    );
   }
+
+  // --- MÉTODOS OBSOLETOS ELIMINADOS ---
+  // getGraficosDemograficos y getPreferencias ya no son necesarios
 }

@@ -1,6 +1,6 @@
 // src/app/shared/models/dashboard.models.ts
 
-// Para los filtros de los desplegables
+// Para los filtros de los desplegables geográficos
 export interface Region {
   id: string; // Puede ser id_municipio, id_distritolocal, etc.
   nombre: string;
@@ -19,51 +19,54 @@ export interface KpisGenerales {
   }[];
 }
 
-// Interfaces para los datos que vienen de getGraficosDemograficos
-export interface GraficosDemograficos {
-  distribucionEdad: {
-    rango: string;
-    total: string;
-  }[];
-  nivelEscolaridad: {
-    nivel: string;
-    total: string;
-  }[];
-  ocupacionPrincipal: {
-    ocupacion: string;
-    total: string;
-  }[];
-}
-
-// Interfaces para los datos que vienen de getPreferencias
-export interface Preferencia {
-  candidato: string;
-  total: string;
-}
-
-// 2. Define la interfaz para la RESPUESTA COMPLETA que manda la API
-export interface PreferenciasResponse {
-  preferencias: Preferencia[]; // Aquí dentro está el array que necesitas
-}
-
 // Interfaces para los datos que vienen de getUbicaciones
 export interface Ubicacion {
-  latitud: string; // Asumo string del backend, ajustar si es number
-  longitud: string; // Asumo string del backend, ajustar si es number
+  latitud: string;
+  longitud: string;
 }
 
-// DTO para enviar filtros al backend (similar al de NestJS)
+// DTO para enviar filtros al backend (Versión corregida)
 export interface DashboardFilters {
-  [key: string]: string | undefined;
-  id_estado?: string; // Nuevo
+  // Filtros geográficos (todos opcionales y de tipo string)
+  id_estado?: string;
   id_distrito_federal?: string;
   id_distrito_local?: string;
   id_municipio?: string;
-  id_seccion?: string; // Nuevo
-  id_comunidad?: string; // Nuevo
+  id_seccion?: string;
+  id_comunidad?: string;
+
+  // Filtro de respuestas (tipo objeto o indefinido)
+  answerFilters?: { [questionId: string]: string[] };
 }
 
-export interface QuestionResultDto { // Asegúrate de que 'export' esté aquí
+// Para los resultados de los gráficos dinámicos
+export interface QuestionResultDto {
   label: string;
   value: number;
 }
+
+
+// --- Interfaces movidas aquí desde api.service.ts ---
+
+/**
+ * Define la estructura de una pregunta de la encuesta
+ * (usado en el sidebar de filtros)
+ */
+export interface SurveyQuestion {
+  id_pregunta: number;
+  texto_pregunta: string;
+}
+
+/**
+ * Define la estructura de una opción de respuesta
+ * (usado para los checkboxes del sidebar de filtros)
+ */
+export interface QuestionOption {
+  id_opcion: string;
+  texto_opcion: string;
+}
+
+
+// --- Interfaces Obsoletas Eliminadas ---
+// Ya no necesitamos GraficosDemograficos, Preferencia, ni PreferenciasResponse
+// porque todo se maneja con SurveyQuestion y QuestionResultDto
