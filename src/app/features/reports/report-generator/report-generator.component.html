@@ -6,6 +6,35 @@
     Selecciona los gráficos que deseas incluir en el reporte PDF.
   </p>
 
+  <!-- Botón abrir filtros -->
+  <div class="flex justify-center mb-6">
+    <button (click)="openFilterSidebar()" class="bg-gray-100 px-4 py-2 rounded-lg border">
+      Abrir filtros
+    </button>
+  </div>
+  <!-- Overlay y panel lateral como en Dashboard -->
+  <div
+    *ngIf="isFilterSidebarOpen"
+    (click)="closeFilterSidebar()"
+    class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+    [ngClass]="{ 'opacity-100': isFilterSidebarOpen, 'opacity-0 pointer-events-none': !isFilterSidebarOpen }"
+  >
+  </div>
+
+  <div
+    class="fixed top-0 right-0 h-full w-80 md:w-96 bg-white z-50 shadow-2xl transition-transform duration-300 ease-in-out"
+    [ngClass]="{ 'translate-x-0': isFilterSidebarOpen, 'translate-x-full': !isFilterSidebarOpen }"
+    (click)="$event.stopPropagation()"
+    [attr.aria-hidden]="!isFilterSidebarOpen"
+  >
+    <app-filter-sidebar
+      [questions]="surveyQuestions"
+      (close)="closeFilterSidebar()"
+      (filtersApplied)="onAnswerFiltersApplied($event)"
+    >
+    </app-filter-sidebar>
+  </div>
+
   <!-- KPIs principales -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
     <app-kpi-card
@@ -45,33 +74,35 @@
     </label>
   </div>
 
-  <!-- Contenedor de gráficos -->
+  <!-- Contenedor de gráficos (solo los 4 tipos solicitados) -->
   <div id="report-content" class="space-y-10">
 
-    <!-- DEMOGRAFÍA -->
-    <div id="chart-demografia" *ngIf="graficos[0].seleccionado" class="border rounded-lg p-4 shadow">
-      <h3 class="text-lg font-semibold text-slate-700 mb-2">Demografía</h3>
-      <app-pie-chart
-        title="Distribución por Edad"
-        description="Edad de los encuestados"
-    [data]="questionResults['demografia']"
-      ></app-pie-chart>
+    <!-- GAUGE (semicircular) -->
+    <div id="chart-gauge" *ngIf="isSelected('gauge')" class="border rounded-lg p-4 shadow">
+      <h3 class="text-lg font-semibold text-slate-700 mb-2">Gráfico semicircular</h3>
+      <!-- Usamos 'sexo' como ejemplo de datos proporcionales -->
+      <app-gauge-chart title="Proporción" description="Ejemplo" [data]="questionResults['sexo']"></app-gauge-chart>
     </div>
 
-    <!-- MAPA -->
-    <div id="chart-mapa" *ngIf="graficos[1].seleccionado" class="border rounded-lg p-4 shadow">
-      <h3 class="text-lg font-semibold text-slate-700 mb-2">Mapa Geográfico</h3>
-      <app-heatmap-map [data]="ubicaciones"></app-heatmap-map>
+    <!-- HORIZONTAL BAR -->
+    <div id="chart-hbar" *ngIf="isSelected('hbar')" class="border rounded-lg p-4 shadow">
+      <h3 class="text-lg font-semibold text-slate-700 mb-2">Gráfico de barras horizontales</h3>
+      <!-- Usamos 'politicosHombres' como ejemplo -->
+      <app-bar-chart title="Barras horizontales" description="Ejemplo" [data]="questionResults['politicosHombres']"></app-bar-chart>
     </div>
 
-    <!-- PREFERENCIAS -->
-    <div id="chart-preferencias" *ngIf="graficos[2].seleccionado" class="border rounded-lg p-4 shadow">
-      <h3 class="text-lg font-semibold text-slate-700 mb-2">Preferencias Electorales</h3>
-        <app-bar-chart
-        title="Preferencias Electorales"
-        description="Distribución por partido"
-        [data]="questionResults['preferencias']"
-      ></app-bar-chart>
+    <!-- VERTICAL BAR -->
+    <div id="chart-vbar" *ngIf="isSelected('vbar')" class="border rounded-lg p-4 shadow">
+      <h3 class="text-lg font-semibold text-slate-700 mb-2">Gráfico de barras verticales</h3>
+      <!-- Usamos 'rangoEdad' como ejemplo -->
+      <app-vertical-bar-chart title="Barras verticales" description="Ejemplo" [data]="questionResults['rangoEdad']"></app-vertical-bar-chart>
+    </div>
+
+    <!-- PIE / DOUGHNUT -->
+    <div id="chart-pie" *ngIf="isSelected('pie')" class="border rounded-lg p-4 shadow">
+      <h3 class="text-lg font-semibold text-slate-700 mb-2">Gráfico de pastel / dona</h3>
+      <!-- Usamos 'demografia' como ejemplo -->
+      <app-pie-chart title="Pie/Dona" description="Ejemplo" [data]="questionResults['demografia']"></app-pie-chart>
     </div>
 
   </div>

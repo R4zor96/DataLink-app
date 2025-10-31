@@ -6,13 +6,16 @@ import html2canvas from 'html2canvas';
 
 // 🧩 Importamos los componentes reutilizables del dashboard
 import { KpiCardComponent } from '../../../shared/components/kpi-card/kpi-card.component';
-import { HeatmapMapComponent } from '../../../shared/components/heatmap-map/heatmap-map.component';
 import { PieChartComponent } from '../../../shared/components/pie-chart/pie-chart.component';
 import { BarChartComponent } from '../../../shared/components/bar-chart/bar-chart.component';
+import { GaugeChartComponent } from '../../../shared/components/gauge-chart/gauge-chart.component';
+import { VerticalBarChartComponent } from '../../../shared/components/vertical-bar-chart/vertical-bar-chart.component';
+import { FilterSidebarComponent } from '../../../shared/components/filter-sidebar/filter-sidebar.component';
 // Removed unused chart components imports (not used in this component's template)
 
 // 🧠 Modelos que ya usa tu dashboard
-import { KpisGenerales, Ubicacion, QuestionResultDto } from '../../../shared/models/dashboard.models';
+import { KpisGenerales, Ubicacion, QuestionResultDto, DashboardFilters, SurveyQuestion } from '../../../shared/models/dashboard.models';
+import { ApiService } from '../../../core/services/api.service';
 
 @Component({
   selector: 'app-report-generator',
@@ -20,11 +23,12 @@ import { KpisGenerales, Ubicacion, QuestionResultDto } from '../../../shared/mod
   imports: [
     CommonModule,
     FormsModule,
-    KpiCardComponent,
-    HeatmapMapComponent,
-    PieChartComponent,
-    BarChartComponent,
-    // GaugeChartComponent and VerticalBarChartComponent removed because they are not used here
+  KpiCardComponent,
+  PieChartComponent,
+  BarChartComponent,
+  GaugeChartComponent,
+  VerticalBarChartComponent,
+  FilterSidebarComponent,
   ],
   templateUrl: './report-generator.component.html',
   styleUrl: './report-generator.component.css'
@@ -52,11 +56,16 @@ export class ReportGeneratorComponent implements OnInit {
   ];
 
   // 🔹 Resultados de gráficas (simulados)
-  graficos: { id: string, nombre: string, seleccionado: boolean }[] = [
-    { id: 'demografia', nombre: 'Demografía', seleccionado: false },
-    { id: 'mapa', nombre: 'Mapa Geográfico', seleccionado: false },
-    { id: 'preferencias', nombre: 'Preferencias Electorales', seleccionado: false }
-  ];
+    // 🔹 Resultados de gráficas (simulados)
+    // Limitamos a los 4 tipos que solicitaste: Gauge (semicircular), Horizontal Bar,
+    // Vertical Bar y Pie/Doughnut. Cada entrada tiene un id que se usa como contenedor
+    // (chart-<id>) para la generación de PDF.
+    graficos: { id: string, nombre: string, seleccionado: boolean }[] = [
+      { id: 'gauge', nombre: 'Gráfico semicircular (Gauge)', seleccionado: false },
+      { id: 'hbar', nombre: 'Gráfico de barras horizontales', seleccionado: false },
+      { id: 'vbar', nombre: 'Gráfico de barras verticales', seleccionado: false },
+      { id: 'pie', nombre: 'Gráfico de pastel / dona', seleccionado: false }
+    ];
 
   // `QuestionResultDto` espera `{ label: string; value: number }`
   questionResults: { [key: string]: QuestionResultDto[] } = {
@@ -73,6 +82,45 @@ export class ReportGeneratorComponent implements OnInit {
     ]
   };
 
+  // Datos simulados adicionales para los 4 tipos de gráfico
+  // 'sexo' -> usado por el Gauge
+  // 'politicosHombres' -> ejemplo para barras horizontales
+  // 'rangoEdad' -> ejemplo para barras verticales
+  // (ya tenemos 'demografia' para el pie)
+  
+  // Merge defaults right away so bindings in template are safe
+  private mergeSimulatedData() {
+    const add: { [key: string]: QuestionResultDto[] } = {
+      sexo: [
+        { label: 'Hombre', value: 22 },
+        { label: 'Mujer', value: 15 }
+      ],
+      politicosHombres: [
+        { label: 'Carlos Luna', value: 7 },
+        { label: 'Delfino Suarez', value: 6 },
+        { label: 'Alfonso Sanchez', value: 4 }
+      ],
+      rangoEdad: [
+        { label: '18-24', value: 11 },
+        { label: '25-34', value: 6 },
+        { label: '35-44', value: 4 },
+        { label: '45-54', value: 2 }
+      ]
+    };
+
+    for (const k of Object.keys(add)) {
+      if (!this.questionResults[k]) {
+        this.questionResults[k] = add[k];
+      }
+    }
+  }
+
+  // --- Filtros (compatibles con Dashboard) ---
+  currentFilters: DashboardFilters = {};
+  surveyQuestions: SurveyQuestion[] = [];
+  isFilterSidebarOpen: boolean = false;
+  masterAnswerFilters: DashboardFilters['answerFilters'] = {};
+
   // Getters para mantener la plantilla existente que usa propiedades planas
   // Devuelven string|number para encajar con el Input de `KpiCardComponent` (number | string)
   get municipiosCubiertos(): number | string {
@@ -83,8 +131,62 @@ export class ReportGeneratorComponent implements OnInit {
     return this.kpisGenerales?.cobertura?.distritosLocales ?? 'N/A';
   }
 
+  constructor(private apiService: ApiService) {}
+
   ngOnInit(): void {
     console.log('ReportGeneratorComponent cargado ✅');
+    this.loadSurveyQuestions();
+    this.mergeSimulatedData();
+  }
+
+  // Helper para checar si un gráfico está seleccionado por id (usado en templates)
+  isSelected(id: string): boolean {
+    return !!this.graficos.find(g => g.id === id && g.seleccionado);
+  }
+
+  // Carga las preguntas para alimentar el sidebar de filtros
+  loadSurveyQuestions(): void {
+    this.apiService.getSurveyQuestions().subscribe({
+      next: (questions) => {
+        this.surveyQuestions = questions;
+      },
+      error: () => {
+        this.surveyQuestions = [];
+      }
+    });
+  }
+
+  openFilterSidebar() {
+    this.isFilterSidebarOpen = true;
+  }
+
+  closeFilterSidebar() {
+    this.isFilterSidebarOpen = false;
+  }
+
+  // Se llama desde el FilterSidebarComponent cuando el usuario aplica filtros
+  onAnswerFiltersApplied(filters: { [questionId: string]: string[] }) {
+    this.masterAnswerFilters = filters || {};
+    // Reconstruir objecto de filtros para la API
+    const filtersToSend: DashboardFilters = { ...this.currentFilters };
+    if (Object.keys(this.masterAnswerFilters).length > 0) {
+      filtersToSend.answerFilters = this.masterAnswerFilters as any;
+    }
+    this.loadFilteredData(filtersToSend);
+  }
+
+  // Recarga KPIs y ubicaciones usando los filtros seleccionados
+  loadFilteredData(filters?: DashboardFilters) {
+    this.apiService.getKpisGenerales(filters).subscribe({
+      next: (kpis) => (this.kpisGenerales = kpis),
+      error: () => (this.kpisGenerales = null),
+    });
+
+    this.apiService.getUbicaciones(filters).subscribe({
+      next: (u) => (this.ubicaciones = u || []),
+      error: () => (this.ubicaciones = []),
+    });
+    // Nota: podríamos recargar questionResults dinámicamente aquí si conocemos los ids
   }
 
   // 🔹 Generar PDF con los gráficos seleccionados

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { catchError } from 'rxjs/operators';
@@ -76,7 +77,7 @@ export class DashboardPageComponent implements OnInit {
   isLoadingFilters: boolean = false;
   isLoadingQuestions: boolean = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -387,5 +388,11 @@ export class DashboardPageComponent implements OnInit {
     this.masterAnswerFilters = filters || {};
     this.loadAllDashboardData();
     this.closeFilterSidebar();
+  }
+
+  // Navega al generador de reportes (ruta hija 'reports')
+  goToReports() {
+    // Navegación relativa para que funcione tanto en /dashboard como si el módulo está en otra ruta
+    this.router.navigate(['reports'], { relativeTo: this.route });
   }
 }
