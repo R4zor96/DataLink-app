@@ -66,8 +66,10 @@
       class="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-lg border border-slate-200 cursor-pointer"
     >
       <input
-        type="checkbox"
-        [(ngModel)]="grafico.seleccionado"
+        type="radio"
+        name="chartType"
+        [(ngModel)]="selectedGraficoId"
+        [value]="grafico.id"
         class="accent-[#E71D36] w-4 h-4"
       />
       <span class="font-medium text-slate-700">{{ grafico.nombre }}</span>
@@ -111,10 +113,26 @@
   <div class="flex justify-center mt-10">
     <button
       (click)="generatePDF()"
+      [disabled]="(isGeneratingPdf || false)"
       class="bg-[#E71D36] text-white px-6 py-3 rounded-lg hover:bg-[#C4172D] transition flex items-center gap-2"
     >
+      <span *ngIf="isGeneratingPdf" class="animate-spin mr-2">⏳</span>
       <i class="fas fa-file-pdf"></i>
       Generar Reporte PDF
     </button>
+  </div>
+  <!-- Área temporal para renderizar charts que se capturan para el PDF -->
+  <div *ngIf="renderChartsForPdf" class="fixed inset-0 bg-white/95 z-50 overflow-auto p-6">
+    <div *ngFor="let q of pdfQuestions" class="mb-6">
+      <!-- Reduced size for temporary render to avoid memory spikes -->
+      <div id="chart-question-{{q.id_pregunta}}" style="width:720px;height:320px;margin:0 auto;padding:6px;background:#fff;border:1px solid #eee;">
+        <ng-container [ngSwitch]="getChartTypeForQuestion(q.id_pregunta)">
+          <app-gauge-chart *ngSwitchCase="'gauge'" [data]="mapToChartData(q.id_pregunta)"></app-gauge-chart>
+          <app-pie-chart *ngSwitchCase="'pie'" [data]="mapToChartData(q.id_pregunta)"></app-pie-chart>
+          <app-vertical-bar-chart *ngSwitchCase="'vbar'" [data]="mapToChartData(q.id_pregunta)"></app-vertical-bar-chart>
+          <app-bar-chart *ngSwitchDefault [data]="mapToChartData(q.id_pregunta)"></app-bar-chart>
+        </ng-container>
+      </div>
+    </div>
   </div>
 </div>
