@@ -393,6 +393,20 @@ export class DashboardPageComponent implements OnInit {
   // Navega al generador de reportes (ruta hija 'reports')
   goToReports() {
     // Navegación relativa para que funcione tanto en /dashboard como si el módulo está en otra ruta
-    this.router.navigate(['reports'], { relativeTo: this.route });
+    // Pass geographic filters as query params so the report generator can reuse them
+    const geoKeys = [
+      'id_estado',
+      'id_distrito_federal',
+      'id_distrito_local',
+      'id_municipio',
+      'id_seccion',
+      'id_comunidad',
+    ];
+    const qp: any = {};
+    geoKeys.forEach((k) => {
+      const v = (this.currentFilters as any)[k];
+      if (v && v !== 'all') qp[k] = v;
+    });
+    this.router.navigate(['reports'], { relativeTo: this.route, queryParams: qp });
   }
 }
