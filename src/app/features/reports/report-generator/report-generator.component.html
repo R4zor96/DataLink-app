@@ -66,10 +66,16 @@
       class="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-lg border border-slate-200 cursor-pointer"
     >
       <input
+<<<<<<< HEAD
         type="radio"
         name="chartType"
         [(ngModel)]="selectedGraficoId"
         [value]="grafico.id"
+=======
+        type="checkbox"
+        [checked]="isSelected(grafico.id)"
+        (change)="updateSelectedGrafico(grafico.id)"
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
         class="accent-[#E71D36] w-4 h-4"
       />
       <span class="font-medium text-slate-700">{{ grafico.nombre }}</span>

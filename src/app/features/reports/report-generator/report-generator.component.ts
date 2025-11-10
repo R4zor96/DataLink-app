@@ -5,6 +5,10 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { firstValueFrom } from 'rxjs';
 import Chart from 'chart.js/auto';
+<<<<<<< HEAD
+=======
+import { ActivatedRoute } from '@angular/router';
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
 import { DEFAULT_CHART_COLORS } from '../../../shared/constants/chart-colors';
 
 // 🧩 Importamos los componentes reutilizables del dashboard
@@ -69,7 +73,11 @@ export class ReportGeneratorComponent implements OnInit {
 
   // ID del tipo de gráfico seleccionado por el usuario (selección única)
   selectedGraficoId: string | null = null;
+<<<<<<< HEAD
 
+=======
+  private readonly CAPTURE_SCALE = 3;
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
   // Resultados de ejemplo para asegurar bindings
   questionResults: { [key: string]: QuestionResultDto[] } = {
     demografia: [
@@ -123,6 +131,15 @@ export class ReportGeneratorComponent implements OnInit {
   pdfQuestionResultsById: { [id: number]: QuestionResultDto[] } = {};
   // Flag to prevent concurrent PDF generation and to drive UI state
   isGeneratingPdf: boolean = false;
+<<<<<<< HEAD
+=======
+  // Higher scale for canvas captures (increase for sharper images; beware memory)
+  // Eliminado: CAPTURE_SCALE ya está declarado más arriba
+  // Optional PDF background (data URL) loaded from assets at runtime
+  private pdfBackgroundDataUrl: string | null = null;
+  // Prepared small logo data URL (PNG) to draw in the corner
+  private smallLogoDataUrl: string | null = null;
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
   get distritosLocalesCubiertos(): number | string {
     return this.kpisGenerales?.cobertura?.distritosLocales ?? 'N/A';
   }
@@ -131,7 +148,222 @@ export class ReportGeneratorComponent implements OnInit {
     return this.kpisGenerales?.cobertura?.municipios ?? 'N/A';
   }
 
+<<<<<<< HEAD
   constructor(private apiService: ApiService) {}
+=======
+  constructor(private apiService: ApiService, private route: ActivatedRoute) {}
+
+  // Convert pixels to millimeters taking into account the capture scale.
+  // We assume a base screen DPI of 96 and multiply by the CAPTURE_SCALE used when rendering.
+  private pxToMm(px: number): number {
+    const dpi = 96 * this.CAPTURE_SCALE;
+    return (px * 25.4) / dpi;
+  }
+
+  // Convert millimeters to pixels using the same effective DPI used for canvas rendering
+  private mmToPx(mm: number): number {
+    const dpi = 96 * this.CAPTURE_SCALE;
+    return Math.max(1, Math.round((mm / 25.4) * dpi));
+  }
+
+  // Compose a full-page image by drawing the prepared page-sized background and overlaying the chart image
+  // chartImgData: dataURL of the chart (PNG), chartPxW/H are its pixel dimensions
+  // imgXmm/imgYmm/imgWidthMm/imgHeightMm determine where the chart should be placed on the page (in mm)
+  private async composePageImageWithChart(chartImgData: string, chartPxW: number, chartPxH: number,
+                                         pageWmm: number, pageHmm: number,
+                                         imgXmm: number, imgYmm: number, imgWidthMm: number, imgHeightMm: number): Promise<string> {
+    // page pixel dims
+    const pxW = this.mmToPx(pageWmm);
+    const pxH = this.mmToPx(pageHmm);
+
+    const pageCanvas = document.createElement('canvas');
+    pageCanvas.width = pxW;
+    pageCanvas.height = pxH;
+    const ctx = pageCanvas.getContext('2d');
+    if (!ctx) throw new Error('No canvas context for page composition');
+
+    // draw background (if prepared) - it should already be page-sized but draw to be safe
+    if (this.pdfBackgroundDataUrl) {
+      const bgImg = await this.imageElementFromDataUrl(this.pdfBackgroundDataUrl);
+      ctx.drawImage(bgImg, 0, 0, pxW, pxH);
+    } else {
+      // clear white
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, pxW, pxH);
+    }
+
+    // draw chart image onto page canvas at the requested mm coordinates
+    const chartImg = await this.imageElementFromDataUrl(chartImgData);
+    const destX = this.mmToPx(imgXmm);
+    const destY = this.mmToPx(imgYmm);
+    const destW = this.mmToPx(imgWidthMm);
+    const destH = this.mmToPx(imgHeightMm);
+    ctx.drawImage(chartImg, 0, 0, chartPxW, chartPxH, destX, destY, destW, destH);
+
+    // return composed PNG dataURL
+    return pageCanvas.toDataURL('image/png');
+  }
+
+  // Compose only the chart region by cropping the prepared page background and drawing the chart on top.
+  // Returns a dataURL for the cropped region which can be added to the PDF at the specified mm rect.
+  private async composeChartRegionWithBackground(chartImgData: string, chartPxW: number, chartPxH: number,
+                                                 pageWmm: number, pageHmm: number,
+                                                 destXmm: number, destYmm: number, destWmm: number, destHmm: number): Promise<string> {
+    // page pixels
+    const pagePxW = this.mmToPx(pageWmm);
+    const pagePxH = this.mmToPx(pageHmm);
+
+    // destination (region) pixels
+    const destPxX = this.mmToPx(destXmm);
+    const destPxY = this.mmToPx(destYmm);
+    const destPxW = this.mmToPx(destWmm);
+    const destPxH = this.mmToPx(destHmm);
+
+    // create a temp page-sized canvas and draw the prepared background into it
+    const pageCanvas = document.createElement('canvas');
+    pageCanvas.width = pagePxW;
+    pageCanvas.height = pagePxH;
+    const pCtx = pageCanvas.getContext('2d');
+    if (!pCtx) throw new Error('No canvas context for page composition');
+
+    if (this.pdfBackgroundDataUrl) {
+      const bgImg = await this.imageElementFromDataUrl(this.pdfBackgroundDataUrl);
+      pCtx.drawImage(bgImg, 0, 0, pagePxW, pagePxH);
+    } else {
+      pCtx.fillStyle = '#ffffff';
+      pCtx.fillRect(0, 0, pagePxW, pagePxH);
+    }
+
+    // Now create a canvas for just the region we want to place into the PDF
+    const regionCanvas = document.createElement('canvas');
+    regionCanvas.width = destPxW;
+    regionCanvas.height = destPxH;
+    const rCtx = regionCanvas.getContext('2d');
+    if (!rCtx) throw new Error('No canvas context for region composition');
+
+    // copy the region of the page that will be under the chart
+    rCtx.drawImage(pageCanvas, destPxX, destPxY, destPxW, destPxH, 0, 0, destPxW, destPxH);
+
+    // draw the chart onto that region, scaling the chart pixels to the region size
+    const chartImg = await this.imageElementFromDataUrl(chartImgData);
+    rCtx.drawImage(chartImg, 0, 0, chartPxW, chartPxH, 0, 0, destPxW, destPxH);
+
+    return regionCanvas.toDataURL('image/png');
+  }
+
+  // Decide which chart type to use for a question based on result shape
+  public getChartTypeForQuestion(idPregunta: number): 'gauge' | 'pie' | 'vbar' | 'hbar' {
+    // If the user selected a global chart type, force it for all questions
+    if (this.selectedGraficoId) {
+      return this.selectedGraficoId as 'gauge' | 'pie' | 'vbar' | 'hbar';
+    }
+    const data = this.pdfQuestionResultsById[idPregunta] || [];
+    if (data.length === 2) return 'gauge';
+    if (data.length <= 4) return 'pie';
+    if (data.length <= 8) return 'vbar';
+    return 'hbar';
+  }
+
+  // Map QuestionResultDto[] to the chart components data shape
+  public mapToChartData(idPregunta: number) {
+    const data: QuestionResultDto[] = this.pdfQuestionResultsById[idPregunta] || [];
+    return data.map((d: QuestionResultDto, i: number) => ({ label: d.label, value: d.value, color: undefined }));
+  }
+
+  // Create an offscreen chart image (returns dataURL and canvas size)
+  private async createChartImage(idPregunta: number, results: QuestionResultDto[]): Promise<{ imgData: string; width: number; height: number }> {
+    // create hidden container
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-20000px';
+    container.style.top = '0px';
+    // visual size in CSS pixels
+    const visualWidth = 720;
+    const visualHeight = 320;
+    container.style.width = visualWidth + 'px';
+    container.style.height = visualHeight + 'px';
+    document.body.appendChild(container);
+
+    const canvas = document.createElement('canvas');
+    // render at higher pixel density for crisper images
+    canvas.width = visualWidth * this.CAPTURE_SCALE;
+    canvas.height = visualHeight * this.CAPTURE_SCALE;
+    canvas.style.width = visualWidth + 'px';
+    canvas.style.height = visualHeight + 'px';
+  // ensure canvas background is transparent so PDF background can show through
+  canvas.style.background = 'transparent';
+    container.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      document.body.removeChild(container);
+      throw new Error('No canvas context');
+    }
+
+    // Choose chart type
+    const chartType = this.getChartTypeForQuestion(idPregunta);
+    const labels = results.map(r => r.label);
+    const values = results.map(r => r.value);
+
+    // Use the app's default chart palette for consistent branding
+    const colors = values.map((v, i) => DEFAULT_CHART_COLORS[i % DEFAULT_CHART_COLORS.length]);
+
+    // Build Chart.js config
+    const config: any = {
+      type: chartType === 'gauge' ? 'doughnut' : (chartType === 'vbar' ? 'bar' : (chartType === 'hbar' ? 'bar' : 'doughnut')),
+      data: {
+        labels: labels,
+        datasets: [{ data: values, backgroundColor: colors }]
+      },
+      options: {
+        responsive: false,
+        animation: false,
+        maintainAspectRatio: false,
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'end',
+            formatter: (value: number, context: any) => {
+              return `${value} personas`;
+            },
+            color: '#000',
+            font: {
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    };
+
+    // Adjust options for specific chart types
+    if (chartType === 'gauge') {
+      config.options.cutout = '70%';
+      config.options.rotation = -90;
+      config.options.circumference = 180;
+    }
+    if (chartType === 'hbar') {
+      config.options.indexAxis = 'y';
+    }
+
+    // instantiate chart
+    const chartInstance = new Chart(ctx as any, config);
+
+    // wait a frame for chart to draw
+    await new Promise(resolve => setTimeout(resolve, 80));
+
+    // export as PNG so transparency is preserved and the PDF background remains visible
+    const imgData = canvas.toDataURL('image/png');
+
+    const width = canvas.width; // pixels
+    const height = canvas.height; // pixels
+
+    // cleanup
+    try { chartInstance.destroy(); } catch (e) {}
+    if (container.parentNode) container.parentNode.removeChild(container);
+
+    return { imgData, width, height };
+  }
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
 
   // Decide which chart type to use for a question based on result shape
   public getChartTypeForQuestion(idPregunta: number): 'gauge' | 'pie' | 'vbar' | 'hbar' {
@@ -227,12 +459,194 @@ export class ReportGeneratorComponent implements OnInit {
 
   ngOnInit(): void {
     console.log('ReportGeneratorComponent cargado ✅');
+
+    // If dashboard forwarded geographic filters via query params (e.g. id_distrito_federal),
+    // apply them now so all data and PDF generation honor the same scope.
+    try {
+      const params = this.route.snapshot && (this.route.snapshot.queryParams || {});
+      const geoKeys = ['id_estado', 'id_distrito_federal', 'id_distrito_local', 'id_municipio', 'id_seccion', 'id_comunidad'];
+      let applied = false;
+      for (const k of geoKeys) {
+        if (params && params[k] !== undefined && params[k] !== null && params[k] !== '') {
+          (this.currentFilters as any)[k] = params[k];
+          applied = true;
+        }
+      }
+      if (applied) {
+        console.log('[ReportGenerator] Applied filters from dashboard:', this.currentFilters);
+        // Reload KPIs/Ubicaciones using the applied filters so the page matches the dashboard scope
+        this.loadFilteredData(this.currentFilters);
+      }
+    } catch (e) {
+      console.debug('[ReportGenerator] Could not read route query params', e);
+    }
+
     this.loadSurveyQuestions();
     this.mergeSimulatedData();
   }
 
+  // Load an image from the assets folder and store as dataURL for use as full-page background.
+  // Place your background image at `src/assets/report-bg.png` (or change the path below).
+  /**
+   * Load the project's background image and render it into a canvas sized to the PDF page
+   * so the image is contained (fully visible) and centered. This avoids cropping logos.
+   * pageWmm/pageHmm are the page dimensions in millimeters (A4 landscape values passed from generatePDF).
+   */
+  private async loadPdfBackground(pageWmm: number, pageHmm: number, opacity = 0.12): Promise<void> {
+    try {
+      const url = '/assets/report-bg.png';
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        console.debug('[ReportGenerator] pdf background not found at', url, 'status', resp.status);
+        this.pdfBackgroundDataUrl = null;
+        return;
+      }
+      const blob = await resp.blob();
+      const rawDataUrl = await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result as string);
+        fr.onerror = (err) => reject(err);
+        fr.readAsDataURL(blob);
+      });
+
+      // Create an image element from the data URL
+      const imgEl = await this.imageElementFromDataUrl(rawDataUrl);
+
+      // compute pixel dimensions for the PDF page using an effective DPI
+      const dpi = 96 * this.CAPTURE_SCALE; // same scale used for chart canvases
+      const pxW = Math.max(1, Math.round((pageWmm / 25.4) * dpi));
+      const pxH = Math.max(1, Math.round((pageHmm / 25.4) * dpi));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = pxW;
+      canvas.height = pxH;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        // fallback to raw dataURL
+        this.pdfBackgroundDataUrl = rawDataUrl;
+        return;
+      }
+
+      // clear with white (or transparent if you prefer)
+      ctx.clearRect(0, 0, pxW, pxH);
+
+      // compute COVER fit (scale image so it fully covers the page) and center it
+      // This makes the background full-bleed and preserves visual composition.
+      const imgRatio = imgEl.width / imgEl.height || 1;
+      const pageRatio = pxW / pxH || 1;
+      let drawW: number, drawH: number;
+      if (imgRatio > pageRatio) {
+        // image is relatively wider: match height and crop horizontally
+        drawH = pxH;
+        drawW = Math.round(pxH * imgRatio);
+      } else {
+        // image is relatively taller or equal: match width and crop vertically
+        drawW = pxW;
+        drawH = Math.round(pxW / imgRatio);
+      }
+      // center the image so important parts remain visible
+      const offsetX = Math.round((pxW - drawW) / 2);
+      const offsetY = Math.round((pxH - drawH) / 2);
+
+      // draw faded background so logos/content stay readable
+      ctx.globalAlpha = opacity;
+      ctx.drawImage(imgEl, offsetX, offsetY, drawW, drawH);
+      ctx.globalAlpha = 1;
+
+      this.pdfBackgroundDataUrl = canvas.toDataURL('image/png');
+      console.debug('[ReportGenerator] prepared pdf background (contained) size', pxW, 'x', pxH, 'draw', drawW, 'x', drawH, 'opacity', opacity);
+    } catch (err) {
+      console.debug('[ReportGenerator] could not load PDF background', err);
+      this.pdfBackgroundDataUrl = null;
+    }
+  }
+
+  // Create an HTMLImageElement from a data URL
+  private async imageElementFromDataUrl(dataUrl: string): Promise<HTMLImageElement> {
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(err);
+      img.src = dataUrl;
+    });
+  }
+
+  // Load an image element directly from a URL (assets). Returns the element or throws.
+  private async imageElementFromUrl(url: string): Promise<HTMLImageElement> {
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(err);
+      img.src = url;
+    });
+  }
+
+  // Prepare a small PNG dataURL for the corner logo by fetching the asset and rasterizing it to a canvas.
+  private async prepareSmallLogoDataUrl(logoPath = '/assets/logo-small.svg', logoWmm = 30, logoHmm = 12): Promise<void> {
+    try {
+      const resp = await fetch(logoPath);
+      if (!resp.ok) { this.smallLogoDataUrl = null; return; }
+      const blob = await resp.blob();
+      const rawDataUrl = await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result as string);
+        fr.onerror = (err) => reject(err);
+        fr.readAsDataURL(blob);
+      });
+
+      const img = await this.imageElementFromDataUrl(rawDataUrl);
+      const dpi = 96 * this.CAPTURE_SCALE;
+      const pxW = Math.max(1, Math.round((logoWmm / 25.4) * dpi));
+      const pxH = Math.max(1, Math.round((logoHmm / 25.4) * dpi));
+      const canvas = document.createElement('canvas');
+      canvas.width = pxW;
+      canvas.height = pxH;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { this.smallLogoDataUrl = null; return; }
+      // draw image to fit the canvas
+      ctx.clearRect(0, 0, pxW, pxH);
+      // preserve aspect ratio and fit (contain)
+      const ratioImg = img.width / img.height || 1;
+      const ratioCanvas = pxW / pxH;
+      let drawW = pxW, drawH = pxH;
+      if (ratioImg > ratioCanvas) {
+        drawW = pxW;
+        drawH = Math.round(pxW / ratioImg);
+      } else {
+        drawH = pxH;
+        drawW = Math.round(pxH * ratioImg);
+      }
+      const offsetX = Math.round((pxW - drawW) / 2);
+      const offsetY = Math.round((pxH - drawH) / 2);
+      ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+      this.smallLogoDataUrl = canvas.toDataURL('image/png');
+      console.debug('[ReportGenerator] prepared small logo dataUrl len', this.smallLogoDataUrl.length);
+    } catch (e) {
+      console.debug('[ReportGenerator] could not prepare small logo', e);
+      this.smallLogoDataUrl = null;
+    }
+  }
+
+  // Updated logic to synchronize selectedGraficoId with checkboxes
+  public updateSelectedGrafico(id: string): void {
+    this.selectedGraficoId = id;
+    this.graficos.forEach(grafico => {
+      grafico.seleccionado = grafico.id === id;
+    });
+  }
+
+  // Updated isSelected method to rely on selectedGraficoId
+  public isSelected(id: string): boolean {
+    return this.selectedGraficoId === id;
+  }
+
   // Helper para checar si un gráfico está seleccionado por id (usado en templates)
+<<<<<<< HEAD
   isSelected(id: string): boolean {
+=======
+  isSelectedOld(id: string): boolean {
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
     // If a single global selection is made, honor it. Otherwise fall back to the per-item flag.
     if (this.selectedGraficoId) return this.selectedGraficoId === id;
     return !!this.graficos.find(g => g.id === id && g.seleccionado);
@@ -329,6 +743,13 @@ export class ReportGeneratorComponent implements OnInit {
     this.renderChartsForPdf = true;
 
     try {
+<<<<<<< HEAD
+=======
+  // Load background and prepare small logo once before rendering pages so they're available
+  // even if some questions don't produce a chart.
+  await this.loadPdfBackground(pageWidth, pageHeight, 0.12);
+  await this.prepareSmallLogoDataUrl('/assets/logo-small.svg', 30, 12);
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
       // Process questions in small batches to avoid rendering all charts at once
       const MAX_QUESTIONS = 200; // safety cap
       const batchSize = 6; // number of charts to render/capture per pass
@@ -348,6 +769,7 @@ export class ReportGeneratorComponent implements OnInit {
           const pageIndex = start + i;
           if (pageIndex > 0) doc.addPage();
 
+<<<<<<< HEAD
           // Header
           doc.setFontSize(16);
           doc.setFont(undefined as any, 'bold');
@@ -387,6 +809,116 @@ export class ReportGeneratorComponent implements OnInit {
             }
           }
 
+=======
+              // Background (draw first so content sits on top)
+              if (this.pdfBackgroundDataUrl) {
+                const bgFormat = (this.pdfBackgroundDataUrl.indexOf('data:image/png') === 0) ? 'PNG' : 'JPEG';
+                try {
+                  // try adding as an HTMLImageElement first (sometimes more reliable)
+                  const imgEl = await this.imageElementFromDataUrl(this.pdfBackgroundDataUrl);
+                  try {
+                    (doc as any).addImage(imgEl, bgFormat, 0, 0, pageWidth, pageHeight);
+                    console.debug('[ReportGenerator] drew background (image element) on page', pageIndex);
+                  } catch (innerErr) {
+                    // fallback to data URL string
+                    doc.addImage(this.pdfBackgroundDataUrl, bgFormat, 0, 0, pageWidth, pageHeight);
+                    console.debug('[ReportGenerator] drew background (data URL) on page', pageIndex);
+                  }
+                  // Draw prepared small logo (rasterized PNG) in the top-left if available
+                  try {
+                    if (this.smallLogoDataUrl) {
+                      doc.addImage(this.smallLogoDataUrl, 'PNG', margin, margin - 2, 30, 12);
+                      console.debug('[ReportGenerator] drew prepared small logo on page', pageIndex);
+                    }
+                  } catch (logoErr) {
+                    console.debug('[ReportGenerator] error drawing prepared small logo', logoErr);
+                  }
+                } catch (e) {
+                  // if background embedding fails, continue without it
+                  console.debug('[ReportGenerator] could not draw background on page', e);
+                }
+              }
+
+          // Report title (top-center)
+          doc.setFontSize(20);
+          doc.setFont(undefined as any, 'bold');
+          doc.setTextColor(0, 0, 0);
+          doc.text('Reporte de Resultados de Encuesta', pageWidth / 2, margin + 6, { align: 'center' });
+
+          // thin separator
+          doc.setDrawColor(200);
+          doc.setLineWidth(0.5);
+          doc.line(margin, margin + 9, pageWidth - margin, margin + 9);
+
+          // Meta line (red) under title
+          doc.setFontSize(10);
+          doc.setFont(undefined as any, 'normal');
+          doc.setTextColor(180, 20, 20);
+          const encuestaLabel = (this.kpisGenerales && (this.kpisGenerales as any).nombreEncuesta) ? (this.kpisGenerales as any).nombreEncuesta : 'Encuesta';
+          const municipio = (this.currentFilters && (this.currentFilters as any).id_municipio) ? (this.currentFilters as any).id_municipio : 'Todos';
+          const seccion = (this.currentFilters && (this.currentFilters as any).id_seccion) ? (this.currentFilters as any).id_seccion : 'Todas';
+          const comunidad = (this.currentFilters && (this.currentFilters as any).id_comunidad) ? (this.currentFilters as any).id_comunidad : '';
+          const metaParts = [`Encuesta: ${encuestaLabel}`, `Municipio: ${municipio}`, `Sección: ${seccion}`];
+          if (comunidad) metaParts.push(`Comunidad: ${comunidad}`);
+          const metaLine = metaParts.join(' | ');
+          doc.text(metaLine, pageWidth / 2, margin + 14, { align: 'center' });
+
+          // Question title
+          doc.setFontSize(16);
+          doc.setFont(undefined as any, 'bold');
+          doc.setTextColor(0, 0, 0);
+          const headerY = margin + 24;
+          doc.text(question.texto_pregunta, pageWidth / 2, headerY, { align: 'center' });
+
+          // MetaY used to reserve vertical space
+          let metaY = headerY + 8;
+
+          // Use Chart.js to render an offscreen canvas for the question's data
+          const resultsForQuestion = questionResultsById[question.id_pregunta] || [];
+          if (resultsForQuestion && resultsForQuestion.length > 0) {
+            try {
+              const { imgData, width: cW, height: cH } = await this.createChartImage(question.id_pregunta, resultsForQuestion);
+
+              // Convert returned pixel dimensions into mm for jsPDF using the same effective DPI
+              let imgWidthMm = this.pxToMm(cW);
+              let imgHeightMm = this.pxToMm(cH);
+
+              // Reserve space already used by header/meta (metaY is in mm)
+              const reservedHeight = (metaY - margin) + 12;
+              const availableHeight = contentHeight - reservedHeight;
+
+              // Fit the image into the available content area while preserving aspect ratio
+              if (imgHeightMm > availableHeight) {
+                const scale = availableHeight / imgHeightMm;
+                imgHeightMm = imgHeightMm * scale;
+                imgWidthMm = imgWidthMm * scale;
+              }
+              if (imgWidthMm > contentWidth) {
+                const scale = contentWidth / imgWidthMm;
+                imgWidthMm = imgWidthMm * scale;
+                imgHeightMm = imgHeightMm * scale;
+              }
+
+              const imgX = (pageWidth - imgWidthMm) / 2;
+              const imgY = metaY + 6;
+
+              // Determine image format for jsPDF
+              try {
+                // Compose the chart region so the prepared background shows under the chart
+                const composedRegion = await this.composeChartRegionWithBackground(imgData, cW, cH, pageWidth, pageHeight, imgX, imgY, imgWidthMm, imgHeightMm);
+                doc.addImage(composedRegion, 'PNG', imgX, imgY, imgWidthMm, imgHeightMm);
+              } catch (composeErr) {
+                // fallback: add the chart image directly
+                const format = (typeof imgData === 'string' && imgData.indexOf('data:image/png') === 0) ? 'PNG' : 'JPEG';
+                doc.addImage(imgData, format, imgX, imgY, imgWidthMm, imgHeightMm);
+              }
+            } catch (e) {
+              // fallback to table below
+              console.warn('Chart render failed for question', question.id_pregunta, e);
+            }
+          }
+
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
           // If no results or chart failed, render table
           if (!resultsForQuestion || resultsForQuestion.length === 0) {
             doc.setFontSize(11);
@@ -396,7 +928,21 @@ export class ReportGeneratorComponent implements OnInit {
             // nothing: already rendered chart
           }
 
+<<<<<<< HEAD
           // Footer
+=======
+          // small center URL above the footer
+          try {
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            doc.text('www.votayopina.com', pageWidth / 2, pageHeight - margin - 8, { align: 'center' });
+            doc.setTextColor(0, 0, 0);
+          } catch (e) {
+            // ignore
+          }
+
+          // Footer: page numbering
+>>>>>>> 97872f46e51e58f85ea3e133ebe3e1ac54791a97
           const footerText = `Página ${pageIndex + 1} de ${total}`;
           doc.setFontSize(10);
           doc.text(footerText, pageWidth / 2, pageHeight - margin + 6, { align: 'center' });
