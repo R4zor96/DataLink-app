@@ -67,7 +67,8 @@
     >
       <input
         type="checkbox"
-        [(ngModel)]="grafico.seleccionado"
+        [checked]="isSelected(grafico.id)"
+        (change)="updateSelectedGrafico(grafico.id)"
         class="accent-[#E71D36] w-4 h-4"
       />
       <span class="font-medium text-slate-700">{{ grafico.nombre }}</span>

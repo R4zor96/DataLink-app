@@ -509,8 +509,21 @@ export class ReportGeneratorComponent implements OnInit {
     }
   }
 
+  // Updated logic to synchronize selectedGraficoId with checkboxes
+  public updateSelectedGrafico(id: string): void {
+    this.selectedGraficoId = id;
+    this.graficos.forEach(grafico => {
+      grafico.seleccionado = grafico.id === id;
+    });
+  }
+
+  // Updated isSelected method to rely on selectedGraficoId
+  public isSelected(id: string): boolean {
+    return this.selectedGraficoId === id;
+  }
+
   // Helper para checar si un gráfico está seleccionado por id (usado en templates)
-  isSelected(id: string): boolean {
+  isSelectedOld(id: string): boolean {
     // If a single global selection is made, honor it. Otherwise fall back to the per-item flag.
     if (this.selectedGraficoId) return this.selectedGraficoId === id;
     return !!this.graficos.find(g => g.id === id && g.seleccionado);
