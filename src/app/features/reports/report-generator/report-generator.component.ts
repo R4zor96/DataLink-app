@@ -306,19 +306,6 @@ export class ReportGeneratorComponent implements OnInit {
         responsive: false,
         animation: false,
         maintainAspectRatio: false,
-        plugins: {
-          datalabels: {
-            anchor: 'end',
-            align: 'end',
-            formatter: (value: number, context: any) => {
-              return `${value} personas`;
-            },
-            color: '#000',
-            font: {
-              weight: 'bold'
-            }
-          }
-        }
       }
     };
 
