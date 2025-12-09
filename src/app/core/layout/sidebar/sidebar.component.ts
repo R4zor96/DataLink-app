@@ -12,6 +12,6 @@ export class SidebarComponent {
   menuItems = [
     { label: 'Inicio', path: '/dashboard', icon: 'fa-home' },
     { label: 'Registrar', path: '/dashboard/register', icon: 'fa-user-plus' },
-    { label: 'Reportes', path: '/dashboard/reports', icon: 'fa-chart-bar' } // 👈 Nuevo enlace
+    // Reportes link removed as requested
   ];
 }
