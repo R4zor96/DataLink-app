@@ -16,7 +16,7 @@ import {
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://data-link-api.vercel.app'; // URL de Vercel
+  private baseUrl = 'https://q5nl1uog2m.execute-api.mx-central-1.amazonaws.com/dev'; // URL de Vercel
   //private baseUrl = 'http://localhost:3000'; // URL local
 
   constructor(private http: HttpClient) {}
